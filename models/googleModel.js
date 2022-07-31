@@ -14,11 +14,10 @@ let userSchema = mongoose.Schema({
   }, 
   provider:{ type:String,required:true },
   last_Visited : { type: Date, default: new Date()},
-  joined_At : { type: Date, default: new Date()}
+  joined_At : { type: Date, default: new Date()},
 })
 
-
- let User = mongoose.model("User",userSchema) 
-module.exports = User;  
+ let googleUser = mongoose.model("googleUser",userSchema) 
+module.exports = googleUser;  
 
  

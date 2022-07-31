@@ -1,7 +1,7 @@
 let passport = require("passport");
 let googleStrategy = require("passport-google-oauth20").Strategy;
 let service = require("./user");
-let User = require("../models/googleModel");
+let User = require("../models/googleModel"); 
 
 module.exports = () => {
   passport.serializeUser((user, done) => {
@@ -31,6 +31,7 @@ passport.use(
         joined_At = new Date().toUTCString()
 
       let currentUser = await service.getUserByEmail({ email });
+
       if (!currentUser) {
         let newUser = await service.newGoogleUser({
           id,
@@ -45,7 +46,7 @@ passport.use(
         return done(null, false, {
           message: `You have previously signed up with a different signin method`,
         });
-      }
+      } 
       return done(null, currentUser);
     }
   )

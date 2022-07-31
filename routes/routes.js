@@ -1,57 +1,46 @@
 let express = require("express");
 let routes = express.Router();
 let passport = require("passport");
-let bodyParser = require("body-parser");
- 
-routes.use(express.json({ limit: "1mb" }));
-routes.use(require("cookie-parser")());
-routes.use(bodyParser.urlencoded({ extended: false }));
+let unsplash = require('../controllers/unsplash')
 
-routes.use((req, res, next) => { 
-  res.locals.currentUser = req.user;
-  res.locals.errors = req.flash("error");
-  res.locals.infos = req.flash("info");
-  next();
+let {
+  signup,
+  login, 
+  googleScope,
+  logout,
+  allUsers
+} = require("../controllers/auth-control");
+
+routes.get("/", (req, res) => res.sendStatus(200));
+
+routes.get("/auth/google", googleScope);
+
+routes.get( "/auth/google/callback",
+  passport.authenticate("google", {successRedirect:"http://localhost:3000/checkauth", failureRedirect: "/failed" })
+);
+
+routes.get("/users",allUsers)
+
+routes.get("/failed", (req, res) => {
+  res.send("not Authenticated");
 });
 
-routes.get("/",(req,res)=>res.send('welcome'))
-
-routes.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile',"email"] }));
-
-routes.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/failed' }),
- (req,res,next)=>{  
-    res.redirect('/success');
-    next()
- });
- 
-routes.get("/failed",(req,res)=>{
-  res.send("not Authenticated")
-})
-routes.get("/success",(req,res)=>{
-  if(req.isAuthenticated()){
-  res.send("you are successfully Authenticated")
-}else{
-  res.send("you are not Authenticated")
-}
+routes.get('/login/success',(req,res)=>{
+  console.log(req.user)
+  res.send(req.user)
 })
 
-routes.get('/logout', function(req, res) {
-  req.logout((err)=>{
-if(err) return err
-  })
-
-    if(req.isAuthenticated()){
-        console.log(req.isAuthenticated())
-      res.send("you are successfully Authenticated")
-    }else{
-      res.send("you are not Authenticated")
-    }
+routes.get("/logout", logout);
  
-  
-});
+routes.post("/login", login);
 
+routes.post("/signup", signup);
+
+routes.get("/pics", function(req, res){
+  let pics = unsplash();
+  let info = {"status":200,"photos":pics}
+      res.json(info)
+    });
 
 
 module.exports = routes;
