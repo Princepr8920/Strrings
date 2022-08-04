@@ -36,11 +36,11 @@ routes.post("/login", login);
 
 routes.post("/signup", signup);
 
-routes.get("/pics", function(req, res){
-  let pics = unsplash();
-  let info = {"status":200,"photos":pics}
-      res.json(info)
-    });
+// routes.get("/pics", function(req, res){
+//   let pics = unsplash();
+//   let info = {"status":200,"photos":pics}
+//       res.json(info)
+//     });
 
 
 module.exports = routes;

@@ -4,6 +4,7 @@ let localUser =  require('../models/localModel')
  
 module.exports=()=>{
   passport.serializeUser((user,done)=>{
+    console.log(user.id)
    return done(null,user.id)
   });
   passport.deserializeUser(async (id,done)=>{
@@ -18,20 +19,21 @@ passport.use(new LocalStrategy({
 },
   function(email, password, done) {
     localUser.findOne({ email: email }, function (err, user){
-      if (err) { return done(err); 
-      }else if(!user){
-      return done(null, false); 
+      if (err) {return done(err); 
+
+      }else if(!user){ 
+      return done(null, false,{message:'User not exist',status:404 })
     }else{
       user.checkPassword(password,(err,isMatch)=>{
-        if(err)return err;
-        if(isMatch){
+        if(err){
+           return err
+          }else if(isMatch){
           return done(null,user)
         }else{
-          done(null,false,{message:'Invaild password'})
+         return done(null,false,{message:'Invaild password',status:401})
         }
       })
     }
-      return done(null, user);
     });
   }
 ));

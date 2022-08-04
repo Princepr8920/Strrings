@@ -25,17 +25,21 @@ passport.use(
     async function (accesstoken, refreshtoken, profile, done) {
       let id = profile.id,
         username = profile.displayName,
+        first_name = profile.name.givenName,
+        last_name = profile.name.familyName,
         picture = profile.photos[0].value,
         email = profile.emails[0].value,
         provider = profile.provider,
-        joined_At = new Date().toUTCString()
+        joined_At = new Date().toUTCString();
 
       let currentUser = await service.getUserByEmail({ email });
-
+ 
       if (!currentUser) {
         let newUser = await service.newGoogleUser({
           id,
           username,
+          first_name,
+          last_name,
           picture,
           email,
           provider,

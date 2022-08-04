@@ -5,7 +5,7 @@ let userSchema = mongoose.Schema({
   username: {type:String,unique:true,required: [true, "username required"] },
   first_name : {type:String,required: [true, "firstName required"] },
   last_name : String,
-  password: { type: String, required: [true, "password required"] },
+  password: { type: String,minLength:8, required: [true, "password required"] },
   picture: String,
   bio:String,
   email: {
@@ -41,7 +41,7 @@ userSchema.pre("save", function(done){
   });
 });
 
-userSchema.methods.checkPassword = (guess,done)=>{
+userSchema.methods.checkPassword = function(guess,done){
   bcrypt.compare(guess,this.password,(err,isMatch)=>{
     if(err){
       return err
@@ -51,7 +51,6 @@ userSchema.methods.checkPassword = (guess,done)=>{
   })
 }
 
- 
 
 let localUser = mongoose.model("localUser", userSchema);
 module.exports = localUser;

@@ -6,6 +6,8 @@ let userSchema = mongoose.Schema({
     default:null
   },
   username: String,
+  first_name : {type:String, required: [true, "first_name required"]},
+  last_name : String,
   picture:String,
   email:{
     type:String,
