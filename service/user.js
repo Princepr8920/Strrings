@@ -1,5 +1,0 @@
-let googleModel = require('../models/googleModel')
-let googleService = require('./userService')
-//let localModel = require('../models/localModel')
-//let localService = require('./userService')
-module.exports = googleService(googleModel)
