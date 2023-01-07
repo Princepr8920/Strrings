@@ -1,5 +1,5 @@
 const passport = require("passport");
-const { Identification_Error } = require("../service/handleErrors");
+const { Validation_Error } = require("../service/handleErrors");
 require("dotenv").config();
 
 const local_login = (req, res, next) => { 
@@ -8,16 +8,15 @@ const local_login = (req, res, next) => {
       return err;
     } else if (!user) {
       try {
-        throw new Identification_Error(info.message, info.status);
+        throw new Validation_Error(info.message, info.status);
       } catch (error) {
-        res.status(info.status).json(info);
-        next(error);
+       return next(error);
       }
     } else {
       req.login(user, function (error) {
         if (error) return next(error);
         req.user = user;
-        next();
+       return next();
       });
     }
   })(req, res, next);

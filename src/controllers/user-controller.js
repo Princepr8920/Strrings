@@ -1,18 +1,23 @@
 const { Update_Error, Verificaiton_Error } = require("../service/handleErrors");
-const updateUserInfo = require("../service/updateUser");
-const localUser = require("../models/localModel"),
+const updateUserInfo = require("../service/updateUser"),
   Secure = require("../utils/filterInfo"),
   SecureInfo = new Secure(),
-  infoChecker = require("../service/checkExistenceService"),
   emailSender = require("../service/confirmationCode"),
   sendNewEmail = new emailSender(),
   passwordService = require("../service/passwordService"),
-  SECURE_PASSWORD = new passwordService();
-const TokenMachine = require("../service/createToken");
-const token = new TokenMachine();
+  SECURE_PASSWORD = new passwordService(),
+  TokenMachine = require("../service/createToken"),
+  token = new TokenMachine();
+const {
+  findOneUser,
+  findAll,
+  updateUserData,
+  deleteUserData,
+} = require("../database/database");
+const { requestManager } = require("../service/requestManager");
 
 getUsers = async (req, res) => {
-  let data = await localUser.find().lean();
+  let data = await findAll();
   if (data) {
     let exclude = [
       "__v",
@@ -21,9 +26,16 @@ getUsers = async (req, res) => {
       "passwordResetToken",
       "provider",
       "confirmationCode",
-      "email",
-      "refreshToken",
       "status",
+      "userID",
+      "email",
+      "security",
+      "account_status",
+      "userRequests",
+      "user_logs",
+      "preferences",
+      "securityToken",
+      "refreshToken",
     ];
     const users = SecureInfo.filterInfo(data, exclude);
     return res.status(200).json(users);
@@ -34,64 +46,52 @@ getUsers = async (req, res) => {
 
 const getCurrentUser = async (req, res) => {
   let username = req.params.username;
-  let user = await localUser.findOne({ username }).lean();
+  let user = await findOneUser({ username });
   if (user) {
-    let exclude = [
-      "__v",
-      "_id",
-      "password",
-      "passwordResetToken",
-      "provider",
-      "confirmationCode",
-      "refreshToken",
-      "status",
-    ];
-    const filtredInfo = SecureInfo.filterInfo(user, exclude);
-    res.status(200).json(filtredInfo);
+    const filtredInfo = SecureInfo.filterInfo(user);
+    return res.status(200).json(filtredInfo);
+  } else {
+    return res.sendStatus(404);
   }
 };
 
-const editProfile = async (req, res) => {
-  const update = req.body.update,
-    userID = req.body.userID,
-    user = await localUser.findOne({ userID });
+const editProfile = async (req, res, next) => {
+  const update = req.body,
+
+    refreshToken = req?.cookies?.user_session,
+    user = await findOneUser({ refreshToken });
+  
   try {
     if (user) {
-      const userExistenceCheck = new infoChecker(update),
-        data = await userExistenceCheck.userExistance();
-      if (!data.success) {
-        return res.status(data.status).json(data);
-      } else if (data.user.hasOwnProperty("email")) {
-        let objId = user.userRequests[0]?._id;
-        if (objId) {
-          user.userRequests.id(objId).remove();
+      let isEmailRequest = null;
+      if (update?.hasOwnProperty("email")) {
+        let isRequestManaged = await requestManager(update, user);
+        if (!isRequestManaged?.success) {
+          throw new Update_Error("Email update failed", 422);
         }
-        user.userRequests.push({
-          emailRequest: data.user.email,
-          issueAt: new Date(),
-        });
-        await user.save();
-        const sendMail = await sendNewEmail.sendEmail(
-          userID,
-          data.user.email,
-          "verify_Email",
-          false
-        );
-
-        return res
-          .status(sendMail.status === 200 ? 202 : sendMail.status)
-          .json({ success: sendMail.success, message: sendMail.message });
+        isEmailRequest = isRequestManaged;
+        delete update.email; /// delete this property because email will verify and update rest property
+        if (!Object.keys(update).length) {
+          return res.status(202).json(isEmailRequest);
+        }
+      }
+      const updateSuccess = await updateUserInfo({ update, user });
+      if (updateSuccess?.success) {
+        return isEmailRequest
+          ? res.status(202).json({ isEmailRequest, updateSuccess })
+          : res.status(200).json({
+              user: updateSuccess.user,
+              success: true,
+              message: updateSuccess.message,
+            });
       } else {
-        const updateSuccess = await updateUserInfo({ update, userID }); /// this is a temporary to records history of updates later i changed this with mongodb
-
-        return res.status(updateSuccess.status).json(updateSuccess);
+        throw new Update_Error(updateSuccess?.message || "Couldn't update information", 422);
       }
     } else {
-      throw new Update_Error("invalid update request", 400);
+      throw new Update_Error("Something went wrong", 500);
     }
   } catch (error) {
-    console.error(error);
-    res.status(error.status).json(error);
+    return next(error);
   }
 };
 
@@ -103,18 +103,24 @@ const verifyUserEmail = async (req, res) => {
       expire,
       false
     );
-
-  let user = await localUser.findOne({ userID });
+  const user = await findOneUser({ userID });
 
   if (success && user) {
     const updateSuccess = await updateUserInfo({
-      update: { email: user?.userRequests[0].emailRequest },
-      userID,
+      update: { email: user?.userRequests.emailRequests[0].requestedEmail },
+      user,
     });
-    let objId = user?.userRequests[0]?._id;
-    user?.userRequests.id(objId).remove();
-    await user.save();
-    return res.status(status).json(updateSuccess);
+
+    const isRequested = user.userRequests.emailRequests.length;
+
+    if (isRequested) {
+      await updateUserData(
+        { userID: user.userID },
+        { $pop: { "userRequests.emailRequests": -1 } }
+      );
+    }
+
+    return res.status(200).json(updateSuccess);
   } else {
     return res.status(status).json({ success, status, message });
   }
@@ -128,44 +134,35 @@ const resendVerificaiton = async (req, res) => {
 
 const deleteAccount = async (req, res) => {
   const userID = req.params.userID;
-
-  localUser.findOneAndDelete(userID, (err, deleted) => {
-    if (err) return err;
-    return res.status(200).json({
-      status: 200,
-      success: true,
-      message: "Account deleted successfully",
-    });
+  await deleteUserData({ userID });
+  return res.status(200).json({
+    status: 200,
+    success: true,
+    message: "Account deleted successfully",
   });
 };
 
-const securityLock = async (req, res) => {
+const securityLock = async (req, res, next) => {
   const { securityCode, userID } = req.body;
-
   try {
     const isPasswordOK = await SECURE_PASSWORD.checkPassword(
       securityCode,
       userID
     );
     if (isPasswordOK) {
-      const user = await localUser.findOne({ userID });
+      const user = await findOneUser({ userID });
       const { securityToken } = await token.setToken(user, ["securityToken"]);
-      await localUser.findOneAndUpdate(
-        { userID },
-        { securityToken },
-        { new: true }
-      );
+      await updateUserData({ userID }, { $set: { securityToken } });
       res.cookie("editing_mode", securityToken, {
         httpOnly: true,
-        maxAge: 1 * 60 * 60 * 1000,
+        maxAge: 2 * 60 * 60 * 1000,
       });
       return res.sendStatus(200);
     } else {
-      throw new Verificaiton_Error("Invalid password", 401);
+      throw new Verificaiton_Error("Wrong Password", 401);
     }
   } catch (error) {
-    console.log(error);
-    return res.status(error.status).json({ ...error, success: false });
+    return next(error);
   }
 };
 

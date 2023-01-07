@@ -1,13 +1,16 @@
-let passport = require("passport");
-let LocalStrategy = require("passport-local").Strategy;
-let localUser = require("../models/localModel");
+const passport = require("passport"),
+  LocalStrategy = require("passport-local").Strategy,
+  { findOneUser, updateUserData } = require("../database/database"),
+  passwordService = require("./passwordService"),
+  SECURE_PASSWORD = new passwordService(),
+  { ObjectID } = require("mongodb");
 
 module.exports = () => {
   passport.serializeUser((user, done) => {
-    return done(null, user.id);
+    return done(null, user._id);
   });
   passport.deserializeUser(async (id, done) => {
-    let currentUser = await localUser.findOne({ id });
+    let currentUser = await findOneUser({ _id: new ObjectID(id) });
     done(null, currentUser);
   });
 };
@@ -18,40 +21,44 @@ passport.use(
       usernameField: "email",
       passwordField: "password",
     },
-    function (email, password, done) {
-      localUser.findOne({ email: email }, function (err, user) {
-        if (err) {
-          return done(err);
-        } else if (!user) {
+    async function (email, password, done) {
+      const user = await findOneUser({ email });
+      if (!user) {
+        return done(null, false, {
+          message: "User not exist",
+          status: 404,
+          success: false,
+        });
+      } else {
+        const checkPassword = await SECURE_PASSWORD.checkPassword(
+          password,
+          email
+        );
+        let counter = user?.user_logs?.visit_logs.length || 0;
+        if (checkPassword) {
+          await updateUserData(
+            { email },
+            {
+              $push: {
+                "user_logs.visit_logs": {
+                  visited_on: new Date(),
+                  time_spent: "none",
+                  visited_count: counter++,
+                },
+              },
+              $set: { last_Visited: new Date() },
+            }
+          );
+
+          return done(null, user);
+        } else {
           return done(null, false, {
-            message: "User not exist",
-            status: 404,
+            message: "Wrong Password",
+            status: 401,
             success: false,
           });
-        } else {
-          user.checkPassword(password, (err, isMatch) => {
-            if (err) {
-              return err;
-            } else if (isMatch) {
-              let counter = user.user_logs.visit_logs.length; //// i use this counter variable temporary but when i use mongodb use $inc operator to use this
-              user.last_Visited = new Date();
-              user.user_logs.visit_logs.push({
-                visited_on: new Date(),
-                time_spent: "none",
-                visited_count: counter++,
-              });
-              user.save();
-              return done(null, user);
-            } else {
-              return done(null, false, {
-                message: "Wrong Password",
-                status: 401,
-                success: false,
-              });
-            }
-          });
         }
-      });
+      }
     }
   )
 );

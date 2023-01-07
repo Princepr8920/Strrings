@@ -1,7 +1,7 @@
 const { sendConfirmationEmail } = require("../service/mailer"),
-  { Verificaiton_Error } = require("../service/handleErrors"),
-  localUser = require("../models/localModel"),
-  { v4: uuidv4 } = require("uuid");
+  { Verificaiton_Error } = require("../service/handleErrors");
+
+const { updateUserData, findOneUser } = require("../database/database");
 
 module.exports = class VerifyUser {
   #RandomDigit() {
@@ -13,14 +13,17 @@ module.exports = class VerifyUser {
 
   async sendEmail(userID, email, task, resend) {
     const confirmationCode = this.#RandomDigit();
-    const getUser = await localUser.findOne({
-      $or: [{ email: email }, { userID: userID }],
-    });
+    const getUser = await findOneUser(
+      [{ email: email }, { userID: userID }],
+      "$or"
+    );
+    const userEmail = getUser?.email;
+
     try {
       let isEmailSent =
         task === "Account verification"
           ? await sendConfirmationEmail(
-              getUser.username,
+              getUser?.username,
               email,
               "verify_Account",
               confirmationCode
@@ -31,40 +34,45 @@ module.exports = class VerifyUser {
               "verify_Email",
               confirmationCode
             );
+
       if (isEmailSent.success && getUser) {
-        let objId = getUser?.confirmationCode[0]?._id;
-        if (objId) {
-          getUser?.confirmationCode.id(objId).remove();
+        if (getUser?.confirmationCode.length > 0) {
+          await updateUserData(
+            { email: userEmail },
+            { $pop: { confirmationCode: -1 } }
+          );
         }
-        getUser.confirmationCode.push({
-          otp: confirmationCode,
-          for: task,
-          issueAt: new Date(),
-          resend: resend,
-        });
-        await getUser.save();
+
+        await updateUserData(
+          { email: userEmail },
+          {
+            $push: {
+              confirmationCode: {
+                otp: confirmationCode,
+                for: task,
+                issueAt: new Date(),
+                resend: resend,
+              },
+            },
+          }
+        );
         return {
           success: true,
-          status: 200,
           message: "Verification email sent.",
         };
       } else {
         throw new Verificaiton_Error("Verification email not sent !", 500);
       }
     } catch (error) {
-      console.error(error);
-      return {
-        success: false,
-        status: error.status,
-        message: error.message,
-      };
+      return error;
     }
   }
 
   async sendResetPasswordLink(username, email, link) {
-    let getUser = await localUser.findOne({
-      $or: [{ email: email }, { username: username }],
-    });
+    let getUser = findOneUser(
+      [{ email: email }, { username: username }],
+      "$or"
+    );
     try {
       const isEmailSent = await sendConfirmationEmail(
         username,
@@ -76,69 +84,63 @@ module.exports = class VerifyUser {
         if (getUser) {
           return {
             success: true,
-            status: 200,
-            message: "Verification email sent.",
+            message: "Password reset link has been sent to your registered email address.",
           };
         }
       } else {
-        throw new Verificaiton_Error("couldn't send reset password link", 500);
+        throw new Verificaiton_Error("couldn't send reset password link.", 500);
       }
     } catch (error) {
-      console.error(error);
-      return {
-        success: false,
-        status: error.status,
-        message: error.message,
-      };
+      return error;
     }
   }
 
-  async VerifyConfirmationCode(code, expire,isNewUser) {
-    const userProfile = await localUser.findOne({
-      "confirmationCode.otp": code,
-    });
+  async VerifyConfirmationCode(code, expire) {
+    const userProfile = await findOneUser({ "confirmationCode.otp": code });
 
     let issuedTime = new Date(
       userProfile?.confirmationCode[0].issueAt
     ).getTime();
     let now = new Date().getTime();
     let isExpire = now - issuedTime;
+
     try {
-      let objId = userProfile?.confirmationCode[0]?._id;
-      if (userProfile && objId) {
+      if (userProfile && userProfile?.confirmationCode.length) {
         if (isExpire >= expire) {
-          userProfile.confirmationCode.id(objId).remove();
-          throw new Verificaiton_Error("invalid verification code", 401);
+          await updateUserData(
+            { email: userProfile.email },
+            { $pop: { confirmationCode: -1 } }
+          );
+          throw new Verificaiton_Error("invalid verification code", 401, false);
         } else {
-          const userID = uuidv4();
-          userProfile.confirmationCode.id(objId).remove();
-          if(isNewUser){
-          userProfile.account_status = "Account Verified";
-          userProfile.userID = userID;}
-          await userProfile.save();
+          await updateUserData(
+            { email: userProfile.email },
+            { $pop: { confirmationCode: -1 } }
+          );
+
           return {
+            userProfile,
             success: true,
             message: "Verified succcessfully",
-            status: 200,
           };
         }
       } else {
-        throw new Verificaiton_Error("invalid verification code", 401);
+        throw new Verificaiton_Error("invalid verification code", 401, false);
       }
     } catch (error) {
-      console.error(error);
-      return { success: false, message: error.message, status: error.status };
+      return error;
     }
   }
 
-  async resendVerificationEmail(pass) {
-    const user = await localUser.findOne({ refreshToken: pass });
+  
 
+  async resendVerificationEmail(pass) {
+    const user = await findOneUser({ refreshToken: pass });
     try {
       if (
         user &&
         user.confirmationCode.length > 0 &&
-        user.userRequests.length > 0
+        user.userRequests.emailRequests.length > 0
       ) {
         const issuedTime = new Date(
             user?.confirmationCode[0]?.issueAt
@@ -149,11 +151,11 @@ module.exports = class VerifyUser {
         if (now - issuedTime > 120000 || !resend) {
           const emailSuccess = await this.sendEmail(
             user.userID,
-            user.userRequests[0].emailRequest,
+            user.userRequests.emailRequests[0].requestedEmail,
             "verify_Email",
             true
           );
-          return { ...emailSuccess, time: +wait };
+          return { ...emailSuccess, time: +wait, status: 200 };
         } else {
           return {
             success: false,
@@ -165,11 +167,7 @@ module.exports = class VerifyUser {
         throw new Verificaiton_Error("Bad request", 400);
       }
     } catch (error) {
-      console.error(error);
-      return {
-        success: false,
-        ...error,
-      };
+      return error;
     }
   }
 };

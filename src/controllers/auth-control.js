@@ -10,19 +10,23 @@ const Secure = require("../utils/filterInfo");
 const SecureInfo = new Secure();
 const emailSender = require("../service/confirmationCode");
 const sendNewEmail = new emailSender();
-const localUser = require("../models/localModel");
-const bcrypt = require("bcrypt");
+const { findOneUser, updateUserData } = require("../database/database");
+const activateAccount = require("../service/activateAccount");
+const passwordService = require("../service/passwordService");
+const SECURE_PASSWORD = new passwordService();
 
 const refresh = async (req, res) => {
   const cookies = req.cookies;
   if (!cookies?.user_session) return res.sendStatus(403);
-  if(cookies?.editing_mode){ res.clearCookie("editing_mode", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-  });}
+  if (cookies?.editing_mode) {
+    res.clearCookie("editing_mode", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
+  }
   const refreshToken = cookies.user_session;
-  const user = await localUser.findOne({ refreshToken }).lean();
+  const user = await findOneUser({ refreshToken });
   if (!user) return res.sendStatus(403);
 
   jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
@@ -34,89 +38,75 @@ const refresh = async (req, res) => {
     const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
       expiresIn: "1h",
     });
-    let exclude = [
-      "__v",
-      "_id",
-      "password",
-      "requestsToken",
-      "provider",
-      "confirmationCode",
-      "refreshToken",
-    ];
-    const userWithToken = SecureInfo.filterInfo(user, exclude);
+    const userWithToken = SecureInfo.filterInfo(user);
     return res.json({ userWithToken, accessToken });
   });
 };
 
 const signup = async (req, res) => {
-  let userInfo = req.user;
-  const { userID, email } = userInfo;
-  sendNewEmail.sendEmail(userID, email, "Account verification", false);
   return res.status(202).json({
     message: "Account verification pending",
-    email: email,
+    email: req.user.email,
     success: true,
   });
 };
 
-const verifyUser = async (req, res, next) => {
+const verifyNewUser = async (req, res, next) => {
   const confirmationCode = req.body.code;
-  const { userInfo, error } = await sendNewEmail.VerifyConfirmationCode(
+  const VerifiedUser = await sendNewEmail.VerifyConfirmationCode(
     confirmationCode,
     20 * 60 * 1000,
     true
   );
-  if (userInfo) {
-    // To generate refresh and access token
-    const { refreshToken, accessToken } = await token.setToken(userInfo, [
-      "refreshToken",
-    ]);
-    // To filter confidential informantion
-    let exclude = [
-      "__v",
-      "_id",
-      "password",
-      "requestsToken",
-      "provider",
-      "confirmationCode",
-      "refreshToken",
-    ];
-    const user = SecureInfo.filterInfo(userInfo._doc, exclude);
+
+  if (VerifiedUser.success) {
+    const activatedAccount = await activateAccount(
+      VerifiedUser.userProfile.email
+    );
+    const { refreshToken, accessToken } = await token.setToken(
+      activatedAccount,
+      ["refreshToken"]
+    );
+    const user = SecureInfo.filterInfo(VerifiedUser.userProfile);
     res.cookie("user_session", refreshToken, {
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 168 * 60 * 60 * 1000,
     });
     return res.status(200).json({ user, accessToken });
   } else {
-    res.status(401).json({ error });
-    next(error);
+    next(VerifiedUser);
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   let userInfo = req.user;
   const { username, email } = userInfo;
-  if (userInfo.account_status === "Account verification pending") {
-    sendNewEmail.sendEmail(username, email, "Account verification", false);
-    return res.status(202).json({ message: userInfo.status, email: email });
+  if (
+    userInfo.account_status === "Account verification pending" &&
+    !userInfo?.userID
+  ) {
+    const mailSuccess = await sendNewEmail.sendEmail(
+      username,
+      email,
+      "Account verification",
+      false
+    );
+    if (mailSuccess.success) {
+      return res
+        .status(202)
+        .json({ message: "Account verification pending.", email: email });
+    } else {
+      next(mailSuccess);
+    }
   } else {
     let { refreshToken, accessToken } = await token.setToken(userInfo, [
       "refreshToken",
     ]);
     res.cookie("user_session", refreshToken, {
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 168 * 60 * 60 * 1000,
     });
-    let exclude = [
-      "__v",
-      "_id",
-      "password",
-      "requestsToken",
-      "provider",
-      "confirmationCode",
-      "refreshToken",
-    ];
-    let user = SecureInfo.filterInfo(userInfo._doc, exclude);
+    let user = SecureInfo.filterInfo(userInfo);
     return res.status(200).json({ user, accessToken, success: true });
   }
 };
@@ -126,7 +116,7 @@ const logout = async function (req, res) {
   if (!cookies?.user_session) return res.sendStatus(204);
   const refreshToken = cookies?.user_session;
 
-  const user = await localUser.findOne({ refreshToken });
+  const user = await findOneUser({ refreshToken });
   if (!user) {
     res.sendStatus(403);
   } else {
@@ -135,44 +125,55 @@ const logout = async function (req, res) {
       secure: true,
       sameSite: "None",
     });
-    user.refreshToken = "";
-    let cancelcodeRequest = user?.confirmationCode[0]?._id;
-    let cancelRequests = user?.userRequests[0]?._id;
-    user?.confirmationCode.id(cancelcodeRequest).remove();
-    user?.userRequests.id(cancelRequests).remove();
-    await user.save();
+    let cancelCodeRequest = user?.confirmationCode;
+    let cancelRequests = user?.userRequests;
+
+    if (
+      cancelCodeRequest.length ||
+      cancelRequests.length ||
+      refreshToken !== ""
+    ) {
+      await updateUserData(
+        { email: user.userID },
+        {
+          $set: { refreshToken: "" },
+          $pop: { userRequests: -1, confirmationCode: -1 },
+        }
+      );
+    }
     res.sendStatus(204);
   }
-
   return req.logout((err) => {
     if (err) return err;
-    console.log(req.isAuthenticated());
+    console.log(req.isAuthenticated(), "User logout successfully");
   });
 };
 
 const recoverPassword = async (req, res, next) => {
-  let user = await localUser.findOne({ email: req.body.email });
+  let user = await findOneUser({ email: req.body.email });
   try {
     if (user) {
-      const { username, email, _id } = user;
+      const { username, email } = user;
       const { requestsToken } = await token.setToken(user, ["requestsToken"]);
-      const link = `http://localhost:4000/account/verify/${_id}/userid/${requestsToken}`;
+      const link = `http://localhost:4000/account/verify/${requestsToken}`;
 
-      const { success, message, status } =
-        await sendNewEmail.sendResetPasswordLink(username, email, link);
+      const { success, message } = await sendNewEmail.sendResetPasswordLink(
+        username,
+        email,
+        link
+      );
       if (success) {
-        return res.status(status).json({
+        return res.status(200).json({
           success,
           message,
           info: {
-            sent: "Password reset link has been sent to your Email.",
             instructions:
               "Please follow the instructions in the Email to reset your password. If you do not receive an E-mail, check your spam mail box.",
             email: email,
           },
         });
       } else {
-        return res.status(status).json({
+        return res.status(500).json({
           success,
           message,
         });
@@ -181,86 +182,67 @@ const recoverPassword = async (req, res, next) => {
       throw new Verificaiton_Error("No match found", 404);
     }
   } catch (error) {
-    res.status(error.status).send({ success: false, error: error });
-    next(error);
+    return next(error);
   }
 };
 
 const verifyLink = async (req, res) => {
-  let { id, token } = req.params;
-  localUser.findOne(
-    {
-      $and: [{ _id: id }, { requestsToken: token }],
-    },
-    (err, user) => {
-      if (err) {
-        return err;
-      } else if (!user) {
-        return res.sendStatus(404);
-      } else if (user) {
-        if (user.requestsToken === token) {
-          res.cookie("change_once", token, {
-            maxAge: 30 * 60 * 1000,
-          });
-          return res.redirect(
-            `http://localhost:3000/user/${id}/passwordrecovery/setnewpassword/${token}`
-          );
-        } else {
-          return res
-            .status(400)
-            .send(
-              "<h1>Bad Request</h1><br><a href=http://localhost:3000>Login</a>"
-            );
-        }
-      }
+  let { token } = req.params;
+  const user = await findOneUser({ requestsToken: token });
+ 
+  if (!user) {
+    return res.sendStatus(404);
+  } else if (user) {
+    if (user.requestsToken === token) {
+      res.cookie("change_once", token, {
+        maxAge: 30 * 60 * 1000,
+      });
+      return res
+        .status(302)
+        .redirect(
+          `http://localhost:3000/user/passwordrecovery/setnewpassword/${token}`
+        );
+    } else {
+      return res
+        .status(400)
+        .send(
+          "<h1>Bad Request</h1><br><a href=http://localhost:3000>Login</a>"
+        );
     }
-  );
+  }
 };
 
-const setNewPassword = async (req, res, next) => {
-  let { id, token } = req.params;
-  let { newPassword, confirmNewPassword } = req.body;
-  let user = await localUser.findOne({ _id: id, requestsToken: token });
-
-  let isMatch = await bcrypt.compare(newPassword, user.password);
+const setAccountNewPassword = async (req, res, next) => {
+  let { token } = req.params;
+  let { newPassword } = req.body;
+  let user = await findOneUser({ requestsToken: token });
 
   try {
     if (!user) {
       return res.sendStatus(500);
     } else {
-      if (newPassword !== confirmNewPassword) {
-        throw new Validation_Error("Passwords do not match.", 409);
-      } else if (newPassword?.length < 8) {
-        throw new Validation_Error(
-          "Use 8 or more characters with a mix of letters, numbers, and symbols.",
-          401
-        );
-      } else if (isMatch) {
-        throw new Validation_Error("Previous passwords cannot be reused.", 401);
-      } else {
-        user.password = newPassword;
-        user.requestsToken = "";
-        user.save();
-        res.clearCookie("change_once", {
-          httpOnly: true,
-          secure: true,
-          sameSite: "None",
-        });
-        return res.status(200).json({
-          success: true,
-          message: "Password reset successful",
-        });
-      }
+      await SECURE_PASSWORD.setNewPassword(newPassword, user.email);
+
+      res.clearCookie("change_once", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      });
+      return res.status(200).json({
+        success: true,
+        message: "Password reset successful",
+      });
     }
   } catch (error) {
-    res.status(error.status).send({ success: false, ...error });
-    next(error);
+   return next(error);
   }
 };
 
-const resendOtp = async (req, res) => {
+///// this route need restore
+
+const resendOtp = async (req, res,next) => {
   const { email } = req.body;
-  const user = await localUser.findOne({ email });
+  const user = await findOneUser({ email });
   try {
     if (user) {
       sendNewEmail.sendEmail(user.username, user.email);
@@ -268,7 +250,7 @@ const resendOtp = async (req, res) => {
     }
     throw new Validation_Error("user not found", 404);
   } catch (error) {
-    return console.error(error);
+    return next(error);
   }
 };
 
@@ -277,9 +259,9 @@ module.exports = {
   login,
   logout,
   refresh,
-  verifyUser,
+  verifyNewUser,
   recoverPassword,
-  setNewPassword,
+  setAccountNewPassword,
   verifyLink,
   resendOtp,
 };

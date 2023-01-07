@@ -2,7 +2,7 @@ const nodeMailer = require("nodemailer");
 
 const sender = {
   user: "princem1620m@gmail.com",
-  pass: "hkdpruosbxpykjgj",
+  pass: process.env.APP_MAIL_PASS,
 };
 
 const transport = nodeMailer.createTransport({

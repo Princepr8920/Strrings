@@ -1,9 +1,8 @@
 const express = require("express"),
   routes = express.Router(),
-  isAuthOk = require("../middleware/ensureAuth"),
-  rateLimiter = require("../middleware/rateLimiter");
-Lock = require("../middleware/lockMiddleware");
-
+  rateLimiter = require("../middleware/rateLimiter"),
+  Lock = require("../middleware/lockMiddleware"),
+  { validator, dataValidationRules } = require("../middleware/validator");
 let {
   getUsers,
   getCurrentUser,
@@ -14,13 +13,22 @@ let {
   deleteAccount,
 } = require("../controllers/user-controller");
 
-routes.get("/getUsers", isAuthOk, getUsers);
-routes.get("/getUser/:username", isAuthOk, getCurrentUser);
-routes.patch("/user/profile/edit", isAuthOk, Lock, editProfile);
-routes.post("/user/email/verification/done", isAuthOk, verifyUserEmail);
+routes.get("/getUsers", getUsers);
+routes.get("/getUser/:username", getCurrentUser);
+
+routes.patch(
+  "/user/profile/edit",
+
+  Lock,
+  dataValidationRules,
+  validator,
+  editProfile
+);
+
+routes.post("/user/email/verification/done", verifyUserEmail);
 routes.get(
   "/user/email/verificaiton/resend",
-  isAuthOk,
+
   rateLimiter(
     1440,
     5,
@@ -29,8 +37,8 @@ routes.get(
   ),
   resendVerificaiton
 );
-routes.delete("/delete/account/:userID", isAuthOk,Lock, deleteAccount);
+routes.delete("/delete/account/:userID", Lock, deleteAccount);
 
-routes.post("/user/account/security", isAuthOk, securityLock);
+routes.post("/user/account/security", securityLock);
 
 module.exports = routes;

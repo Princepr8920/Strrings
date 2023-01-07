@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const { updateUserData } = require("../database/database");
+
 
 module.exports = class TokenMachine {
   async setToken(user, saveToken = []) {
@@ -15,20 +17,26 @@ module.exports = class TokenMachine {
         expiresIn: "30m",
       }),
       securityToken: jwt.sign(payload, process.env.JWT_SESSION_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "2h",
       }),
     };
+
+    const saveTokenToDatabase = {};
 
     for (let i = 0; i < saveToken.length; i++) {
       if (
         saveToken[i] === "refreshToken" ||
         saveToken[i] === "requestsToken" ||
         saveToken[i] === "securityToken"
-      )
-        user[saveToken[i]] = tokens[saveToken[i]];
-      await user.save();
+      ) {
+        saveTokenToDatabase[saveToken[i]] = tokens[saveToken[i]];
+      }
     }
 
+    await updateUserData(
+      { userID: user.userID },
+      { $set: saveTokenToDatabase }
+    );
     return tokens;
   }
 };

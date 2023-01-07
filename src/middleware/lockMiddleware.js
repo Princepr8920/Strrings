@@ -1,17 +1,16 @@
-const localUser = require("../models/localModel");
 const { Update_Error } = require("../service/handleErrors");
+const { findOneUser } = require("../database/database");
 
 async function Lock(req, res, next) {
   try {
-    const securityToken = req.cookies.editing_mode;
-    const isUnlocked = await localUser.findOne({ securityToken });
+    const securityToken = req.cookies.editing_mode,
+      isUnlocked = await findOneUser({ securityToken });
     if (isUnlocked) {
       return next();
     } else {
-      throw new Update_Error("Bad request", 400);
+      throw new Update_Error("Unauthorized Access", 401);
     }
   } catch (error) {
-    res.status(400).json(error)
     next(error);
   }
 }

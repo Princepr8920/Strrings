@@ -1,11 +1,4 @@
-
-
-module.exports = (err, req, res, next) => {
-  console.error(err)
-  res.status(err.status).end()
-}
-
-
-
-
- 
+module.exports = (err, req, res, next) => { 
+  console.error(err);
+  res.status(err.status).json( err );
+};

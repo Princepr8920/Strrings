@@ -1,91 +1,45 @@
-const localUser = require("../models/localModel");
-const { Update_Error } = require("./handleErrors");
-const passwordService = require("./passwordService");
-const SECURE_PASSWORD = new passwordService();
-
-//   i repeted code many time in this file becouse i later use mongodb
-// driver then i can change this file
+const passwordService = require("./passwordService"),
+  SECURE_PASSWORD = new passwordService(),
+  logManager = require("../service/logManager"),
+  { updateUserData } = require("../database/database"),
+  filterInstance = require("../utils/filterInfo"),
+  FILTER = new filterInstance();
 
 module.exports = async function updateUserInfo(info) {
-  const { update, userID } = info;
-  const user = await localUser.findOne({ userID });
-  try {
-    if (user) {
-      if (update.hasOwnProperty("email")) {
-        let counter = user.user_logs.email_logs.length;
-        user.email = update.email;
-        user.user_logs.email_logs.push({
-          email: update.email,
-          updated_on: new Date(),
-          count: counter++,
-        });
-        await user.save();
-        return {
-          user:user,
-          success: true,
-          message: "Email updated successfully",
-          status: 200,
-        };
-      } else if (update.hasOwnProperty("username")) {
-        let counter = user.user_logs.username_logs.length;
-        user.username = update.username;
-        user.user_logs.username_logs.push({
-          username: update.username,
-          updated_on: new Date(),
-          count: counter++,
-        });
-        await user.save();
-        return {
-           user,
-          success: true,
-          message: "Information updated successfully",
-          status: 200,
-        };
-      } else if (update.hasOwnProperty("current_password")) {
-        if (!update.hasOwnProperty("new_password")) {
-          throw new Update_Error("Please enter your new password", 401);
-        } else if (!update.hasOwnProperty("confirm_password")) {
-          throw new Update_Error("Please confirm your new password", 401);
-        } else {
-          const { current_password, new_password, confirm_password } = update;
-          const setPassword = await SECURE_PASSWORD.setNewPassword(
-            { current_password, new_password, confirm_password },
-            userID
-          );
-          return {
-            user,
-            success: setPassword.success,
-            message: setPassword.message,
-            status: setPassword.status,
-          };
-        }
-      } else if (update.hasOwnProperty("security")) {
-        for (let key in update.security) {
-          user.security[key] = update.security[key];
-          await user.save();
-        }
-        return {
-           user,
-          success: true,
-          message: "Information updated successfully",
-          status: 200,
-        };
-      } else {
-        const updatedInfo = await localUser.findOneAndUpdate(userID, update, {
-          new: true,
-        });
-        return {
-          user: updatedInfo,
-          success: true,
-          message: "Information updated successfully",
-          status: 200,
-        };
-      }
+  const { update, user } = info;
+  console.log(update, "thiss is update");
+  let updatedInfo;
+  if (update.hasOwnProperty("current_password")) {
+    const { new_password } = update;
+    let newPasswordSuccess = await SECURE_PASSWORD.setNewPassword(
+      new_password,
+      user.userID
+    );
+    if (newPasswordSuccess.success) {
+      let doNotSave = ["current_password", "new_password", "confirm_password"];
+      FILTER.filterInfo(update, doNotSave);
     } else {
-      throw new Update_Error("User not found", 404);
+      return newPasswordSuccess;
     }
-  } catch (error) { 
-    console.error(error);
-    return { status: error.status, message: error.message };
   }
+
+  if (update.hasOwnProperty("security")) {
+    const securityOptions = update.security,
+      setSecurity = { ...user.security, ...securityOptions };
+    update.security = setSecurity;
+  }
+
+  if (Object.keys(update).length) {
+    updatedInfo = await updateUserData(
+      { userID: user.userID },
+      { $set: update }
+    );
+    await logManager(user, update);
+  }
+
+  return {
+    user: Object.keys(update).length ? updatedInfo : user,
+    success: true,
+    message: "Information updated successfully",
+  };
 };
