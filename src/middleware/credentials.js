@@ -1,12 +1,11 @@
-const origins = require("../config/myOrigins")
+const origins = require("../config/myOrigins");
 
-const credentials = (req,res,next)=>{
-  const origin =  req.headers.origin;
-  if(origins.includes(origin)){
-    res.header("Access-Control-Allow-Credentials",true)
-    
+const credentials = (req, res, next) => {
+  const origin = req.headers.origin;
+  if (origins.includes(origin)) {
+    res.header("Access-Control-Allow-Credentials", true);
   }
-  next()
-}
+  next();
+};
 
-module.exports = credentials
+module.exports = credentials;

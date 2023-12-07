@@ -17,21 +17,19 @@ class Verificaiton_Error extends ApplicationError {
 }
 class Validation_Error extends ApplicationError {
   constructor(message, status, success) {
-    super(
-      message || "Something went wrong",
-      status || 500,
-      success || false,
-    );
+    super(message || "Something went wrong", status || 500, success || false);
   }
 }
 
 class Update_Error extends ApplicationError {
   constructor(message, status, success) {
-    super(
-      message || "Something went wrong",
-      status || 500,
-      success || false,
-    );
+    super(message || "Something went wrong", status || 500, success || false);
+  }
+}
+
+class Service_Error extends ApplicationError {
+  constructor(message, status, success) {
+    super(message || "Something went wrong", status || 500, success || false);
   }
 }
 
@@ -39,4 +37,5 @@ module.exports = {
   Verificaiton_Error,
   Validation_Error,
   Update_Error,
+  Service_Error
 };

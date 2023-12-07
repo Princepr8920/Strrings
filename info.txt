@@ -1,0 +1,3 @@
+cookies name
+
+strrings_connect = user session

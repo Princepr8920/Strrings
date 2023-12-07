@@ -1,37 +1,33 @@
 module.exports = class Secure {
   filterInfo(
     info,
-    out = [
-      "__v",
-      "_id",
+    exclude = [
       "password",
-      "requestsToken",
-      "provider",
+      "_id",
       "confirmationCode",
-      "refreshToken",
-      "securityToken",
-      "user_logs", 
-      "userRequests"
+      "userRequests",
+      "verification",
+      "tokens",
+      "user_logs",
+      "feedback",
+      "provider",
+      "__v"
     ]
   ) {
-    let exclude = out;
-    let filterdInfo = info;
-    if (Array.isArray(info)) {
-      info.forEach((doc) => {
-        exclude.forEach((elem) => {
-          if (doc[elem]) {
-            delete doc[elem];
-          }
-        });
-      });
-    } else {
-      exclude.forEach((elem) => {
-        if (filterdInfo[elem]) {
-          delete filterdInfo[elem];
+    function objFilter(infoObj, itemsToDelete = []) {
+      for (let key in infoObj) {
+        if (itemsToDelete.includes(key)) {
+          delete infoObj[key];
         }
-      });
+      }
+      return infoObj;
     }
-    return filterdInfo;
+
+    if (Array.isArray(info)) {
+      return info.map((e) => objFilter(e, exclude));
+    }
+
+    return objFilter(info, exclude);
   }
 
   hint(email) {

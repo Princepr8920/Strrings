@@ -1,225 +1,258 @@
-async function userModel(client) {
-  await client.db("HELLOAPP").createCollection("userCollection", {
-    validator: {
-      $jsonSchema: {
-        bsonType: "object",
-        title: "user Object Validation",
-        required: [
-          "username",
-          "password",
-          "first_name",
-          "email",
-          "last_Visited",
-          "joined_At",
-        ],
-        additionalProperties: false,
-        properties: {
-          _id: { bsonType: "objectId" },
-          username: {
-            bsonType: "string",
-            minLength: 3,
-            description: "'username' must be a string and is required",
-          },
-          first_name: {
-            bsonType: "string",
-            description: "'first_name' must be a string and is required",
-          },
-          last_name: {
-            bsonType: "string",
-            maxLength: 30,
-            description: "'last_name' must be a string and is required",
-          },
-          password: {
-            bsonType: "string",
-            description: "'password' must be a string and is required",
-            minLength: 8,
-          },
-          email: {
-            bsonType: "string",
-            description: "'email' must be a string and is required",
-          },
-          picture: { bsonType: "string" },
-          bio: { bsonType: "string" },
-          status: { bsonType: "string" },
-          userID: { bsonType: "string" },
-          provider: { bsonType: "string" },
-          last_Visited: { bsonType: "date" },
-          joined_At: { bsonType: "date" },
-          date_of_birth: { bsonType: "date" },
-          securityToken: { bsonType: "string" },
-          refreshToken: { bsonType: "string" },
+const createUniqueIndex = require("../service/createUniqueIndex");
 
-          preferences: {
+let USER_SCHEMA = {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      title: "User Object Validation",
+      required: [
+        "username",
+        "password",
+        "first_name",
+        "email",
+        "last_seen",
+        "joined_at",
+      ],
+      additionalProperties: false,
+      properties: {
+        _id: { bsonType: "objectId" },
+        username: {
+          bsonType: "string",
+          minLength: 3,
+          description: "'username' must be a string and is required",
+        },
+        first_name: {
+          bsonType: "string",
+          description: "'first_name' must be a string and is required",
+        },
+        last_name: {
+          bsonType: "string",
+          maxLength: 30,
+          description: "'last_name' must be a string and is required",
+        },
+        password: {
+          bsonType: "string",
+          description: "'password' must be a string and is required",
+          minLength: 8,
+        },
+        email: {
+          bsonType: "string",
+          description: "'email' must be a string and is required",
+        },
+        picture: { bsonType: "string" },
+        about: { bsonType: "string" },
+        status: { bsonType: "string" },
+        userID: { bsonType: "string" },
+        provider: { bsonType: "string" },
+        last_seen: { bsonType: "date" },
+        joined_at: { bsonType: "date" },
+        birthday: { bsonType: "date" },
+        events: {
+          bsonType: "array",
+          items: {
             bsonType: "object",
-            items: {
-              bsonType: "object",
-              properties: {
-                dark_mode: {
-                  enum: ["on", "off", "auto"],
-                  description: "Must be either on , off, or auto",
-                },
-                theme: { bsonType: "string" },
+            properties: {
+              event_name: { bsonType: "string" },
+              event_time: { bsonType: "date" },
+              event_completed: { bsonType: "bool" },
+              event_type: {
+                enum: [
+                  "Reminder",
+                  "Wishes",
+                  "Alert",
+                  "Suggestion",
+                  "Information",
+                  "Others",
+                ],
               },
-            },
-          },
-
-          security: {
-            bsonType: "object",
-            items: {
-              bsonType: "object",
-              properties: {
-                two_step_verification: { bsonType: "bool" },
-                login_notification: { bsonType: "bool" },
-              },
-            },
-          },
-
-          confirmationCode: {
-            bsonType: "array",
-            items: {
-              bsonType: "object",
-              properties: {
-                otp: { bsonType: "string" },
-                for: { bsonType: "string" },
-                resend: { bsonType: "bool" },
-                issueAt: { bsonType: "date" },
-              },
-            },
-          },
-
-          userRequests: {
-            bsonType: "object",
-            items: {
-              bsonType: "object",
-              properties: {
-                emailRequests: {
-                  bsonType: "array",
-                  items: {
-                    bsonType: "object",
-                    properties: {
-                      requestedEmail: { bsonType: "string" },
-                      issueAt: { bsonType: "date" },
-                    },
-                  },
-                },
-                // accountRequests: {
-                //   bsonType: "array",
-                //   items: {
-                //     bsonType: "object",
-                //     properties: {
-                //       requestedEmail: { bsonType: "string" },
-                //       issueAt: { bsonType: "date" },
-                //     },
-                //   },
-                // },
-              },
-            },
-          },
-
-          account_status: { bsonType: "string" },
-
-          requestsToken: { bsonType: "string" },
-
-          user_logs: {
-            bsonType: "object",
-            items: {
-              bsonType: "object",
-              properties: {
-                email_logs: {
-                  bsonType: "array",
-                  items: {
-                    bsonType: "object",
-                    required: ["email", "update_count", "updated_on"],
-                    properties: {
-                      email: { bsonType: "string" },
-                      updated_on: { bsonType: "date" },
-                      update_count: { bsonType: "int" },
-                    },
-                  },
-                },
-                username_logs: {
-                  bsonType: "array",
-                  items: {
-                    bsonType: "object",
-                    required: ["username", "update_count", "updated_on"],
-                    properties: {
-                      username: { bsonType: "string" },
-                      updated_on: { bsonType: "date" },
-                      update_count: { bsonType: "int" },
-                    },
-                  },
-                },
-                // password_logs: {
-                //   bsonType: "array",
-                //   items: {
-                //     bsonType: "object",
-                //     required: ["password", "update_count", "updated_on"],
-                //     properties: {
-                //       password: { bsonType: "string" },
-                //       updated_on: { bsonType: "date" },
-                //       update_count: { bsonType: "int" },
-                //     },
-                //   },
-                // },
-                visit_logs: {
-                  bsonType: "array",
-                  items: {
-                    bsonType: "object",
-                    required: ["visited_on", "visited_count", "time_spent"],
-                    properties: {
-                      visited_count: { bsonType: "int" },
-                      time_spent: { bsonType: "string" },
-                      visited_on: { bsonType: "date" },
-                    },
-                  },
+              event_info: {
+                bsonType: "object",
+                properties: {
+                  event_description: { bsonType: "string" },
+                  event_highlights: { bsonType: "array" },
                 },
               },
             },
           },
         },
+        appearance: {
+          bsonType: "object",
+          additionalProperties: false,
+          properties: {
+            dark_mode: {
+              enum: ["on", "off", "auto", "system_default"],
+              description: "Must be either on , off, system_default or auto",
+            },
+            background: {
+              bsonType: "object",
+              additionalProperties: false,
+              properties: {
+                bg_type: {
+                  enum: ["image", "solid_colour"],
+                },
+                current_bg: { bsonType: "string" },
+                custom_bg: { bsonType: "bool" },
+              },
+            },
+          },
+        },
+        notifications: {
+          bsonType: "object",
+          additionalProperties: false,
+          properties: {
+            notification_permission: {
+              bsonType: "object",
+              additionalProperties: false,
+              properties: {
+                permission: { bsonType: "bool" },
+                token: { bsonType: "string" },
+              },
+            },
+            message_notification: {
+              bsonType: "bool",
+              description: "Must be either true or false",
+            },
+          },
+        },
+        security: {
+          bsonType: "object",
+          additionalProperties: false,
+          properties: {
+            two_step_verification: { bsonType: "bool" },
+            login_notification: { bsonType: "bool" },
+          },
+        },
+
+        confirmationCode: {
+          bsonType: "object",
+          additionalProperties: false,
+          properties: {
+            code: { bsonType: "string" },
+            for: { bsonType: "string" },
+            resend: { bsonType: "bool" },
+            issueAt: { bsonType: "date" },
+            count: { bsonType: "number" },
+          },
+        },
+
+        userRequests: {
+          bsonType: "object",
+          additionalProperties: false,
+          properties: {
+            emailRequest: {
+              bsonType: "object",
+              additionalProperties: false,
+              properties: {
+                requestedEmail: { bsonType: "string" },
+                issueAt: { bsonType: "date" },
+              },
+            },
+          },
+        },
+
+        verification: { bsonType: "bool" },
+
+        tokens: {
+          bsonType: "object",
+          additionalProperties: false,
+          properties: {
+            requestsToken: { bsonType: "string" },
+            signupToken: { bsonType: "string" },
+            loginToken: { bsonType: "string" },
+            securityToken: { bsonType: "string" },
+            refreshToken: { bsonType: "string" },
+            socketToken: { bsonType: "string" },
+            emailVerificationToken: { bsonType: "string" },
+          },
+        },
+        user_logs: {
+          bsonType: "object",
+          additionalProperties: false,
+          properties: {
+            email_logs: {
+              bsonType: "array",
+              items: {
+                bsonType: "object",
+                additionalProperties: false,
+                required: ["email", "update_count", "updated_on"],
+                properties: {
+                  email: { bsonType: "string" },
+                  updated_on: { bsonType: "date" },
+                  update_count: { bsonType: "int" },
+                },
+              },
+            },
+            username_logs: {
+              bsonType: "array",
+              items: {
+                bsonType: "object",
+                additionalProperties: false,
+                required: ["username", "update_count", "updated_on"],
+                properties: {
+                  username: { bsonType: "string" },
+                  updated_on: { bsonType: "date" },
+                  update_count: { bsonType: "int" },
+                },
+              },
+            },
+            visit_logs: {
+              bsonType: "array",
+              items: {
+                bsonType: "object",
+                additionalProperties: false,
+                properties: {
+                  visit_count: { bsonType: "int" },
+                  time_spent: { bsonType: "string" },
+                  visited_on: { bsonType: "date" },
+                },
+              },
+            },
+          },
+        },
+
+        feedback: {
+          bsonType: "array",
+          items: {
+            bsonType: "object",
+            additionalProperties: false,
+            properties: {
+              message: { bsonType: "string" },
+              receivedAt: { bsonType: "date" },
+            },
+          },
+        },
       },
     },
-    validationLevel: "strict",
-  });
+  },
+  validationLevel: "strict",
+  validationAction: "error",
+};
 
-  createUniqueIndex(client, ["email", "username","userID"]);
-  return;
-}
-
-async function createUniqueIndex(client, properties) {
-  for (let i = 0, len = properties.length; i < len; i++) {
-    await client
-      .db("HELLOAPP")
-      .collection("userCollection")
-      .createIndex({ [properties[i]]: 1 }, { unique: true });
-  }
-  return;
-}
-
-async function setDefaultValues(info) {
+async function setDefaultValues(info, client) {
   const { username, email } = info;
+  await createUniqueIndex(client, {
+    selectedDb: "Strrings",
+    selectedCollection: "userCollection",
+    uniqueness: { email: 1, username: 1, userID: 1 },
+  });
 
   const objectWithDefaultValues = {
     ...info,
-    picture:
-      "https://images.unsplash.com/photo-1531214159280-079b95d26139?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-    bio: "bio not avilable",
-    status: "none",
+    about: "Information is not available.",
+    status: "Available",
     provider: "local",
-    last_Visited: new Date(),
-    joined_At: new Date(),
-    date_of_birth: new Date(),
-    preferences: {
-      dark_mode: false,
-    },
+    picture: `${process.env.CLOUDFRONT_URL}/avatars/small/user_default_avatar.jpg`,
+    last_seen: new Date(),
+    joined_at: new Date(),
     security: {
       two_step_verification: false,
       login_notification: false,
     },
-    confirmationCode: [],
-    account_status: "Account verification pending",
-    userID:"",
-    userRequests: { emailRequests: [] },
+    confirmationCode: {},
+    verification: false,
+    userID: "",
+    userRequests: {},
+    events: [],
     user_logs: {
       email_logs: [{ email: email, updated_on: new Date(), update_count: 0 }],
       username_logs: [
@@ -227,12 +260,24 @@ async function setDefaultValues(info) {
       ],
       visit_logs: [],
     },
-    preferences: {
+    appearance: {
       dark_mode: "off",
-      theme: "default",
+      background: {
+        bg_type: "solid_colour",
+        current_bg: "white",
+        custom_bg: false,
+      },
     },
+    notifications: {
+      message_notification: false,
+      notification_permission: {
+        permission: false,
+        token: "",
+      },
+    },
+    feedback: [],
   };
   return objectWithDefaultValues;
 }
 
-module.exports = { userModel, setDefaultValues };
+module.exports = { setDefaultValues, USER_SCHEMA };

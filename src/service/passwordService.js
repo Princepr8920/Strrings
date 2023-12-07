@@ -1,6 +1,7 @@
-const bcrypt = require("bcrypt");
-const { findOneUser, updateUserData } = require("../database/database");
-const { Validation_Error } = require("./handleErrors");
+const bcrypt = require("bcrypt"),
+  { database } = require("../loaders/mongodb"),
+  userDb = database("userCollection"),
+  { Validation_Error, Service_Error } = require("./handleErrors");
 
 module.exports = class SecurePassword {
   async hashPassword(salt = 10, password) {
@@ -10,11 +11,17 @@ module.exports = class SecurePassword {
   }
 
   async checkPassword(guess, userId) {
-    const { password } = await findOneUser(
-      [{ email: userId }, { userID: userId }, { refreshToken: userId }],
-      "$or"
-    );
+    const { password } = await userDb.findOne({
+      $or: [
+        { email: userId },
+        { userID: userId },
+        { "tokens.refreshToken": userId },
+        { "tokens.requestsToken": userId },
+      ],
+    });
+
     const isMatched = await bcrypt.compare(guess, password);
+
     return isMatched;
   }
 
@@ -22,16 +29,27 @@ module.exports = class SecurePassword {
     try {
       if (newPassword.length >= 8) {
         const newHashedPassword = await this.hashPassword(10, newPassword);
-        const updatedInfo = await updateUserData(
-          [{ email: userId }, { userID: userId }, { refreshToken: userId }],
-          { $set: { password: newHashedPassword } },
-          "$or"
+
+        let isPassowordChanged = await userDb.findOneAndUpdate(
+          {
+            $or: [
+              { email: userId },
+              { userID: userId },
+              { "tokens.refreshToken": userId },
+              { "tokens.requestsToken": userId },
+            ],
+          },
+          { $set: { password: newHashedPassword } }
         );
-        return {
-          success: true,
-          message: "Password changed successfully",
-          user: updatedInfo,
-        };
+
+        if (isPassowordChanged?.value) {
+          return {
+            success: true,
+            message: "Password changed successfully",
+          };
+        } else {
+          throw new Service_Error("Password update error", 500);
+        }
       } else {
         throw new Validation_Error("Password update error", 500);
       }

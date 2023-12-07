@@ -1,6 +1,7 @@
 const passport = require("passport"),
   LocalStrategy = require("passport-local").Strategy,
-  { findOneUser, updateUserData } = require("../database/database"),
+  { database } = require("../loaders/mongodb"),
+  userDb = database("userCollection"),
   passwordService = require("./passwordService"),
   SECURE_PASSWORD = new passwordService(),
   { ObjectID } = require("mongodb");
@@ -10,7 +11,7 @@ module.exports = () => {
     return done(null, user._id);
   });
   passport.deserializeUser(async (id, done) => {
-    let currentUser = await findOneUser({ _id: new ObjectID(id) });
+    let currentUser = await userDb.findOne({ _id: new ObjectID(id) });
     done(null, currentUser);
   });
 };
@@ -22,7 +23,7 @@ passport.use(
       passwordField: "password",
     },
     async function (email, password, done) {
-      const user = await findOneUser({ email });
+      const user = await userDb.findOne({ email });
       if (!user) {
         return done(null, false, {
           message: "User not exist",
@@ -34,22 +35,8 @@ passport.use(
           password,
           email
         );
-        let counter = user?.user_logs?.visit_logs.length || 0;
-        if (checkPassword) {
-          await updateUserData(
-            { email },
-            {
-              $push: {
-                "user_logs.visit_logs": {
-                  visited_on: new Date(),
-                  time_spent: "none",
-                  visited_count: counter++,
-                },
-              },
-              $set: { last_Visited: new Date() },
-            }
-          );
 
+        if (checkPassword) {
           return done(null, user);
         } else {
           return done(null, false, {

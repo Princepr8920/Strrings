@@ -1,18 +1,44 @@
 const { MongoClient } = require("mongodb");
-const uri = process.env.DB_LOC_CONN   //HELLOAPP_DB;
-const client = new MongoClient(uri);
-const connection = { isConnected: false };
-const { userModel } = require("../models/userSchema");
+(uri = process.env.DB_CONN),
+  (client = new MongoClient(uri, {
+    useNewUrlParser: true, // Use the new parser (required for MongoDB >= 3.1)
+    useUnifiedTopology: true, // Use the new Server and Engine
+    retryWrites: true, // Retry write operations upon transient network errors
+  })),
+  ({ USER_SCHEMA } = require("../models/userSchema")),
+  ({ CHAT_SCHEMA } = require("../models/chatSchema")),
+  (connection = { isConnected: false });
 
 async function connectToDatebase() {
   try {
     await client.connect();
-    console.log("Database connected successfully 🧠");
+    console.log(`Database connected successfully 💽`);
     connection.isConnected = true;
-    await setDb({
-      database: "HELLOAPP",
-      collection: "userCollection",
-      model: userModel,
+    const appCollections = [
+      createCollectionWithSchema({
+        collection: "userCollection",
+        schema: USER_SCHEMA,
+      }),
+      createCollectionWithSchema({
+        collection: "chatCollection",
+        schema: CHAT_SCHEMA,
+      }),
+      createCollectionWithSchema({
+        collection: "testCollection",
+        schema: USER_SCHEMA,
+      }),
+    ];
+
+    Promise.all(appCollections)
+      .then((responses) => responses)
+      .catch((error) => {
+        console.error(error);
+      });
+
+    addNewProperty({
+      collection: "chatCollection", //enter collection name to update schema
+      modelObject: CHAT_SCHEMA, // enter schema to update
+      modify: false, // change to true if we need to update schema
     });
   } catch (err) {
     connection.isConnected = false;
@@ -20,21 +46,22 @@ async function connectToDatebase() {
   }
 }
 
-async function setDb(options) {
-  let { database, collection, model } = options;
-  let { isConnected } = connection;
+async function createCollectionWithSchema(options) {
+  let { collection, schema } = options;
   try {
-    if (isConnected) {
-      // setup this funcition or create own ODM
-      if (model && collection) {
+    if (connection.isConnected) {
+      if (schema && collection) {
         const collections = await client
-            .db(database || "HelloDb")
+            .db("Strrings")
             .listCollections()
             .toArray(),
-          collectionExists = collections.map((e) => e.name);
-        !collectionExists.includes(collection) ? await model(client) : "";
+          exisitingCollections = collections.map((e) => e.name);
+        if (!exisitingCollections.includes(collection)) {
+          // If db collection with schema are not created so this will create it🔌
+          await client.db("Strrings").createCollection(collection, schema);
+        }
       }
-      return;
+      return { collection, created: true };
     } else {
       throw new Error("Database not connected ❌");
     }
@@ -43,9 +70,39 @@ async function setDb(options) {
   }
 }
 
-async function disconnectToDatabase() {
-  await client.close();
-  return console.log("Database disconnected successfully 🚫");
+async function addNewProperty(options) {
+  const { collection, modelObject, modify } = options;
+  if (modify) {
+    const DB = client.db("Strrings");
+    DB.command(
+      {
+        collMod: collection,
+        ...modelObject,
+      },
+      function (err, result) {
+        if (err) throw err;
+        return { ...result, isModified: true };
+      }
+    );
+  }
+  return { isModified: false };
 }
 
-module.exports = { connectToDatebase, client, setDb, disconnectToDatabase };
+function database(collection = "userCollection") {
+  const db = client.db("Strrings").collection(collection);
+  return db;
+}
+
+async function disconnectToDatabase() {
+  await client.close();
+  console.log("Database disconnected 🚫");
+  return;
+}
+
+module.exports = {
+  connectToDatebase,
+  client,
+  database,
+  createCollectionWithSchema,
+  disconnectToDatabase,
+};

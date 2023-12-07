@@ -1,38 +1,35 @@
 const emailSender = require("../service/confirmationCode"),
   sendNewEmail = new emailSender(),
-  { updateUserData } = require("../database/database");
+  { database } = require("../loaders/mongodb"),
+  userDb = database("userCollection");
 
 async function requestManager(newdata, oldData) {
-  let isRequested = oldData.userRequests.emailRequests.length;
-
-
-  /// To remove old emailRequests
-  if (isRequested) {
-    await updateUserData(
+  try {
+    await userDb.findOneAndUpdate(
+      /* Set user email request so we use this requested email to
+       send email and later we will set user account email*/
       { userID: oldData.userID },
-      { $pop: { "userRequests.emailRequests": -1 } }
-    );
-  }
-
-// To add new emailRequests
-  await updateUserData(
-    { userID: oldData.userID },
-    {
-      $push: {
-        "userRequests.emailRequests": {
-          requestedEmail: newdata.email,
-          issueAt: new Date(),
+      {
+        $set: {
+          "userRequests.emailRequest": {
+            requestedEmail: newdata.email,
+            issueAt: new Date(),
+          },
         },
-      },
-    }
-  );
-  const emailSuccess = await sendNewEmail.sendEmail(
-    oldData.userID,
-    newdata.email,
-    "verify_Email",
-    false
-  );
+      }
+    );
 
-  return emailSuccess;
+    const emailSuccess = await sendNewEmail.sendEmail({
+      userID: oldData.userID,
+      email: newdata.email,
+      type: "verify_Email",
+      resend: false,
+    });
+
+    return emailSuccess;
+  } catch (error) {
+    error.success = false
+    return error;
+  }
 }
 module.exports = { requestManager };
