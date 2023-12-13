@@ -1,5 +1,5 @@
 const express = require("express"),
-  routes = express.Router(),
+  router = express.Router(),
   upload = require("../middleware/multer"),
   logout = require("../controllers/afterAuth/settings/logout"),
   {appearance,customBackground} = require("../controllers/afterAuth/settings/appearance"),
@@ -21,42 +21,45 @@ const express = require("express"),
     updateSecurity,
   } = require("../controllers/afterAuth/settings/updateSecurity");
 
-routes.put("/account/settings/appearance", appearance);
 
-routes.put("/account/settings/appearance/custom-bg",upload("current_bg",['image/jpeg', 'image/png']), customBackground);
+// settings rotutes
 
-routes.get("/account/settings/blocked-contacts", blockedContacts);
+router.put("/api/account/settings/appearance", appearance);
 
-routes.put(
-  "/account/settings/notifications",
+router.put("/api/account/settings/appearance/custom-bg",upload("current_bg",['image/jpeg', 'image/png']), customBackground);
+
+router.get("/api/account/settings/blocked-contacts", blockedContacts);
+
+router.put(
+  "/api/account/settings/notifications",
   notificationsValidation,
   validator,
   setNotifications
 );
 
-routes.put(
-  "/user/account/manage/security",
+router.put(
+  "/api/user/account/manage/security",
   securityValidation,
   validator,
   updateSecurity
 );
 
-routes.patch(
-  "/user/account/manage/password",
+router.patch(
+  "/api/user/account/manage/password",
   passwordValidation,
   validator,
   updatePassword
 );
 
-routes.put(
-  "/account/settings/notifications-permission",
+router.put(
+  "/api/account/settings/notifications-permission",
   permissionValidation,
   validator,
   notification_permission
 );
 
-routes.get("/logout", logout);
+router.get("/api/logout", logout);
 
-routes.post("/user/feedback", feedback);
+router.post("/api/user/feedback", feedback);
 
-module.exports = routes;
+module.exports = router;

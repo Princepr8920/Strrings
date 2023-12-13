@@ -1,16 +1,16 @@
 const express = require("express"),
-  routes = express.Router(),
+  router = express.Router(),
   getUserProfile = require("../controllers/afterAuth/retrieveData/getUserProfile"),
   getAllUsers = require("../controllers/afterAuth/retrieveData/getusers"),
   userSearch = require("../controllers/afterAuth/retrieveData/searchUser")
   securityLock = require("../controllers/afterAuth/main/securityLock");
 
-routes.get("/get-all-users", getAllUsers);
+router.get("/api/get-all-users", getAllUsers);
 
-routes.get("/search/user/account", userSearch);
+router.get("/api/search/user/account", userSearch);
 
-routes.get("/user/:userID", getUserProfile);
+router.get("/api/user/:userID", getUserProfile);
 
-routes.post("/user/account/security", securityLock);
+router.post("/api/user/account/security", securityLock);
 
-module.exports = routes;
+module.exports = router;

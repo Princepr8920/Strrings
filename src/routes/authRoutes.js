@@ -1,5 +1,5 @@
 const express = require("express");
-(routes = express.Router()),
+(router = express.Router()),
   (verifyTaskToken = require("../middleware/verifyTaskToken")),
   (local_login = require("../middleware/local_login")),
   (local_signup = require("../middleware/local_signup")),
@@ -22,7 +22,8 @@ const express = require("express");
     codeValidation,
   } = require("../middleware/validator"));
 
-routes.post(
+ 
+router.post(
   "/login",
   mustVerifiedAccount,
   signinValidation,
@@ -31,16 +32,16 @@ routes.post(
   login
 ); /// when two-step-verification disabled
 
-routes.post(
+router.post(
   "/two-step-verification",
   verifyTaskToken,
   twoStepVerification,
   login
 ); // when two-step-verification enabled
 
-routes.get("/resend-2-step-verification-code", verifyTaskToken, resendOtp);
+router.get("/resend-2-step-verification-code", verifyTaskToken, resendOtp);
 
-routes.post(
+router.post(
   "/signup",
   mustVerifiedAccount,
   signupValidation,
@@ -49,7 +50,7 @@ routes.post(
   signup
 );
 
-routes.post(
+router.post(
   "/verify-user-account",
   codeValidation,
   validator,
@@ -57,17 +58,17 @@ routes.post(
   verifyNewUser
 );
 
-routes.get("/resend-account-verification-code", verifyTaskToken, resendOtp);
+router.get("/resend-account-verification-code", verifyTaskToken, resendOtp);
 
-routes.delete("/cancel-verification", cancelVerification);
+router.delete("/cancel-verification", cancelVerification);
 
-routes.get("/refresh", refresh);
+router.get("/refresh", refresh);
 
-routes.post("/user/password/recovery", recoverPassword);
+router.post("/user/password/recovery", recoverPassword);
 
-routes.get("/account/verify/:token", resetPasswordLink);
+router.get("/account/verify/:token", resetPasswordLink);
 
-routes.post(
+router.post(
   "/user/password/setnewpassword/:token",
   verifyTaskToken,
   recoverPasswordValidation,
@@ -75,4 +76,4 @@ routes.post(
   setNewPassword
 );
 
-module.exports = routes;
+module.exports = router;

@@ -11,14 +11,14 @@ async function createToken(options) {
     payloadWithId = { userID: user?.userID, id: user?._id },
     payloadWithoutId = { userID: user?.email, id: user?._id },
     durations = {
-      accessToken: "1h",
-      refreshToken: "12h",
+      accessToken: "12h",
+      refreshToken: "7d",
       requestsToken: "30m",
       emailVerificationToken: "30m",
       signupToken: "30m",
       securityToken: "30m",
       loginToken: "30m",
-      socketToken: "12h",
+      socketToken: "7d",
     };
 
   try {

@@ -36,9 +36,8 @@ getMessages = async (req, res, next) => {
 
     return res.status(200).json({ isSaved, allMessages });
   } catch (error) {
-    console.error(error)
-    error = {...error,message:"Couldn't fetch messages"}
-    return next(error);
+    console.error(error);
+    return next({ status: 500, message: "Couldn't fetch messages" });
   }
 };
 

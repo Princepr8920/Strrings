@@ -56,6 +56,8 @@ app.use(passport_init);
 app.use(passport_session);
 localAuth();
 mongodb.connectToDatebase("Strrings");
+mySocket(server); // To start socket
+cloudMessaging(); // To start Firebase cloud messaging service
 
 app.use(handleErrors);
 authRoutes.use(handleErrors);
@@ -74,8 +76,7 @@ app.use(profileUpdateRoutes);
 app.use(mainRoutes);
 app.use(chatRoutes);
 app.use(settingRoutes);
-mySocket(server); // To start socket
-cloudMessaging(); // To start Firebase cloud messaging service
+
 
 app.get("/*", function (req, res) {
   return res.sendFile(path.join(__dirname, "../public", "index.html"));

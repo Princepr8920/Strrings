@@ -1,5 +1,4 @@
-const { Validation_Error } = require("../../../service/handleErrors"),
-  jwt = require("jsonwebtoken"),
+const jwt = require("jsonwebtoken"),
   { database } = require("../../../loaders/mongodb"),
   userDb = database("userCollection");
 
@@ -29,7 +28,7 @@ const resetPasswordLink = async (req, res, next) => {
         return res
           .status(302)
           .redirect(
-            `http://localhost:3000/user/passwordrecovery/setnewpassword/${token}`
+            `http://localhost:4000/user/passwordrecovery/setnewpassword/${token}`
           );
       } else {
        return res.sendStatus(403);

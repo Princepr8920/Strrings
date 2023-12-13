@@ -1,5 +1,5 @@
 const express = require("express"),
-  routes = express.Router(),
+  router = express.Router(),
   {
     validator,
     userInformationValidation,
@@ -24,47 +24,50 @@ const deleteAccount = require("../controllers/afterAuth/accountUpdate/deleteAcco
   } = require("../controllers/afterAuth/accountUpdate/updateAvatar"),
   mustVerifiedAccount = require("../middleware/ensureVerified");
 
-routes.get("/get/user/avatar", getAvatar);
 
-routes.get("/get/contact/avatar", getContactAvatar);
+//profile management related routes
 
-routes.patch(
-  "/user/update-avatar",
+router.get("/api/get/user/avatar", getAvatar);
+
+router.get("/api/get/contact/avatar", getContactAvatar);
+
+router.patch(
+  "/api/user/update-avatar",
   upload("avatar", ["image/jpeg", "image/png"]),
   updateAvatar
 );
 
-routes.get("/user/remove-avatar", removeAvatar);
+router.get("/api/user/remove-avatar", removeAvatar);
 
-routes.patch(
-  "/user/account/manage/unique/email&username",
+router.patch(
+  "/api/user/account/manage/unique/email&username",
   mustVerifiedAccount,
   EmailOrUsernameValidation,
   validator,
   updateEmailAndUsername
 );
 
-routes.patch(
-  "/user/account/manage/information",
+router.patch(
+  "/api/user/account/manage/information",
   userInformationValidation,
   validator,
   updateUserInfo
 );
 
-routes.post(
-  "/user/email/verification/done",
+router.post(
+  "/api/user/email/verification/done",
   codeValidation,
   validator,
   verifyTaskToken,
   verifyUserEmail
 );
 
-routes.get(
-  "/user/email/verificaiton/resend",
+router.get(
+  "/api/user/email/verificaiton/resend",
   verifyTaskToken,
   resendVerificaiton
 );
 
-routes.delete("/delete/user-account", verifyTaskToken, deleteAccount);
+router.delete("/api/delete/user-account", verifyTaskToken, deleteAccount);
 
-module.exports = routes;
+module.exports = router;

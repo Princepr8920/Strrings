@@ -32,7 +32,7 @@ const login = async (req, res, next) => {
       httpOnly: true,
       sameSite: "strict",
       secure: true,
-      maxAge: 12 * 60 * 60 * 1000, //7 * 24 * 60 * 60 * 1000, // for seven days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // for seven days
     });
 
     let excludeInfo = [

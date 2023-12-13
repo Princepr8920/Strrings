@@ -1,9 +1,9 @@
 const express = require("express"),
-  routes = express.Router(),
+  router = express.Router(),
   getMessages = require("../controllers/afterAuth/chats/getMessages"),
   chats = require("../controllers/afterAuth/chats/chats");
 
-routes.get("/user-chats", chats);
-routes.get("/:userID/messages", getMessages);
+router.get("/api/user-chats", chats);
+router.get("/api/:userID/messages", getMessages);
 
-module.exports = routes;
+module.exports = router;

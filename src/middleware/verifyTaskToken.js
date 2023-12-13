@@ -23,13 +23,13 @@ const verifyTaskToken = async (req, res, next) => {
       ],
       "signupToken",
     ],
-    mng_mode: [["/delete/user-account"], "securityToken"],
+    mng_mode: [["/api/delete/user-account"], "securityToken"],
     secure_login: [
       ["/resend-2-step-verification-code", "/two-step-verification"],
       "loginToken",
     ],
     verify_email: [
-      ["/user/email/verification/done", "/user/email/verificaiton/resend"],
+      ["/api/user/email/verification/done", "/api/user/email/verificaiton/resend"],
       "emailVerificationToken",
     ],
   };

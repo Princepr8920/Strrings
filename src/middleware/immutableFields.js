@@ -29,7 +29,7 @@ async function immutableFields(req, res, next) {
 
   if (
     data.hasOwnProperty("email") &&
-    path !== "/user/account/manage/unique/email&username"
+    path !== "/api/user/account/manage/unique/email&username"
     // Prevent to change email without verificaiton
   ) {
     delete data.email;
