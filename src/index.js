@@ -50,7 +50,6 @@ app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "../public")));
 app.use(session);
 app.use(passport_init);
 app.use(passport_session);
@@ -58,6 +57,7 @@ localAuth();
 mongodb.connectToDatebase("Strrings");
 mySocket(server); // To start socket
 cloudMessaging(); // To start Firebase cloud messaging service
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.use(handleErrors);
 authRoutes.use(handleErrors);
