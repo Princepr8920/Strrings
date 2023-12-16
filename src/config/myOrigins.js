@@ -1,5 +1,6 @@
 const origins = [ 
-  "http://localhost:4000",
+
+  "http://localhost:3000",
   "https://www.strrings.com",
   "https://strrings.com"
 ]

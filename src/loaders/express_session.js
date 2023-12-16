@@ -6,6 +6,6 @@ module.exports = session({
   saveUninitialized: true,
   cookie: { maxAge: 1000 * 60 * 60 * 24, secure: false, sameSite: "strict" },
   store: MongoStore.create({
-    mongoUrl: process.env.DB_CONN,
+    mongoUrl: process.env.MONGO_DB_URL,
   }),
 });

@@ -1,5 +1,5 @@
 const { MongoClient } = require("mongodb");
-(uri = process.env.DB_CONN),
+(uri = process.env.MONGO_DB_URL),
   (client = new MongoClient(uri, {
     useNewUrlParser: true, // Use the new parser (required for MongoDB >= 3.1)
     useUnifiedTopology: true, // Use the new Server and Engine
