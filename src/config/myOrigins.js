@@ -1,5 +1,4 @@
-const origins = [
-  "http://localhost:3000", 
+const origins = [ 
   "http://localhost:4000",
 ]
 
