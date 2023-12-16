@@ -20,7 +20,7 @@ const recoverPassword = async (req, res, next) => {
 
       if (tokens.success) {
         const { requestsToken } = tokens.createdTokens;
-        const link = `http://strrings.com/account/verify/${requestsToken}`;
+        const link = `https://www.strrings.com/account/verify/${requestsToken}`;
         const isLinkSend = await sendNewEmail.sendResetPasswordLink({
           username,
           email,
