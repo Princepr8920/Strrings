@@ -36,7 +36,13 @@ app.use(
   helmet.contentSecurityPolicy({
     useDefaults: true,
     directives: {
-      "img-src": ["'self'", "https: data:"],
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", 'https://www.gstatic.com'],
+      styleSrc: ["'self'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:'],
+      connectSrc: ["'self'", 'https://firebaseinstallations.googleapis.com'],
+      objectSrc: ["'none'"],
     },
   })
 );
@@ -57,7 +63,7 @@ localAuth();
 mongodb.connectToDatebase("Strrings");
 mySocket(server); // To start socket
 cloudMessaging(); // To start Firebase cloud messaging service
-app.use(express.static(path.join(__dirname, "../public")));
+// app.use(express.static(path.join(__dirname, "../public")));
 
 app.use(handleErrors);
 authRoutes.use(handleErrors);
@@ -78,9 +84,9 @@ app.use(chatRoutes);
 app.use(settingRoutes);
 
 
-app.get("/*", function (req, res) {
-  return res.sendFile(path.join(__dirname, "../public", "index.html"));
-});
+// app.get("/*", function (req, res) {
+//   return res.sendFile(path.join(__dirname, "../public", "index.html"));
+// });
 
 server.listen(port, (err) => {
   if (err) console.error(err);

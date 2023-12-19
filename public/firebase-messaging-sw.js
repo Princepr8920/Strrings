@@ -8,13 +8,13 @@ importScripts(
 );
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAzESGHigkfuR3LH0l105IBClAFztiXZ_o",
+  apiKey: "AIzaSyCF_Um5g2s2M4U-2gKuSAK6GvLVQryZRsE",
   authDomain: "strrings-29a9e.firebaseapp.com",
   projectId: "strrings-29a9e",
   storageBucket: "strrings-29a9e.appspot.com",
   messagingSenderId: "252292433754",
-  appId: "1:252292433754:web:db3e148ce27426c1e6d563",
-  measurementId: "G-Z3MPW5PQQS"
+  appId: "1:252292433754:web:3f5975fab968d203e6d563",
+  measurementId: "G-EYZJ0GQKXM"
 };
 
 // eslint-disable-next-line no-undef
