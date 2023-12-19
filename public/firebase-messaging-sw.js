@@ -17,6 +17,7 @@ const firebaseConfig = {
   measurementId: "G-EYZJ0GQKXM"
 };
 
+
 // eslint-disable-next-line no-undef
 firebase.initializeApp(firebaseConfig);
 
