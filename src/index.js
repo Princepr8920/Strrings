@@ -37,7 +37,9 @@ app.use(
     useDefaults: true,
     directives: {
       scriptSrc: ["'self'", 'https://www.gstatic.com'],
-      "img-src": ["'self'", "https: data:"],
+      'script-src': ["'self'"],
+      'style-src': ["'self'"],
+      'img-src': ["'self'", "https:", "data:", 'https://d34ct18kvr7jx3.cloudfront.net'],
       connectSrc: ["'self'", 'https://firebaseinstallations.googleapis.com', 'https://fcmregistrations.googleapis.com'],
       objectSrc: ["'none'"],
     },
