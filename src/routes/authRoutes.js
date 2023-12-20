@@ -62,7 +62,7 @@ router.get("/resend-account-verification-code", verifyTaskToken, resendOtp);
 
 router.delete("/cancel-verification", cancelVerification);
 
-router.get("/refresh", refresh);
+router.get("/api/refresh", refresh);
 
 router.post("/user/password/recovery", recoverPassword);
 
