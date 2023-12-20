@@ -16,7 +16,7 @@ async function pushNotification(userIDs, message) {
     sendNotification({
       body: `${sender.username} : ${message.content}`,
       image: sender.picture,
-      link: "https://strrings.com",// open chats when user click on notification
+      link: "https://www.strrings.com",// open chats when user click on notification
       token: receiver.notifications.notification_permission.token,
     });
     return;
