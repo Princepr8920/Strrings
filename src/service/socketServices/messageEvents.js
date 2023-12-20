@@ -4,6 +4,7 @@ const pushNotification = require("../firebase/sendNotification");
 const { batchData, currentBatch } = require("./dataBatch");
 
 function messageEvents(socket, { users, allBlockedUserIDs, openedChats }) {
+  let onlineUsers = Object.values(users);
   socket.on("send", async ({ receiver, message }) => {
     const sender = users[socket.id];
     message.timestamp = new Date();
@@ -24,7 +25,7 @@ function messageEvents(socket, { users, allBlockedUserIDs, openedChats }) {
           receiver,
           message,
         });
-        if (openedChats[receiver] && !openedChats[receiver].includes(sender)) {
+        if (!onlineUsers.includes(receiver) || (openedChats[receiver] && !openedChats[receiver].includes(sender))) {
           // Only send push notification if receiver chat not open ↖
           pushNotification([sender, receiver], message);
         }
