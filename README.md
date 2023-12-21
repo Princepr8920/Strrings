@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://d34ct18kvr7jx3.cloudfront.net/assets/logo/strrings-logo-96px.png" alt="Strrings Logo" width="200" height="200">
+  <img src="https://d34ct18kvr7jx3.cloudfront.net/assets/logo/strrings_logo.png" alt="Strrings Logo" width="200" height="200">
 </p>
 
 # Strrings Chat Application
@@ -68,7 +68,7 @@ Email: Princepr8920@gmail.com
 <p align="center">
   Made with ❤️ by Prince
 </p>
-```
+
 
 
 
