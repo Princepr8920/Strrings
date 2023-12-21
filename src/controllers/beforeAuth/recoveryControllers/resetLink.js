@@ -28,7 +28,7 @@ const resetPasswordLink = async (req, res, next) => {
         return res
           .status(302)
           .redirect(
-            `http://strrings.com/user/passwordrecovery/setnewpassword/${token}`
+            `https://www.strrings.com/user/passwordrecovery/setnewpassword/${token}`
           );
       } else {
        return res.sendStatus(403);
