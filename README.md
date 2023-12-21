@@ -15,7 +15,7 @@ Strrings is a modern and interactive chat application that brings people togethe
 - 📱 Responsive design for a seamless experience on any device
 - ✌ Two-step verification
 - 🔔 User login notification
-- ✔✔ Message Read receipts
+- ✔ Message Read receipts
 - 🔆 Dark mode
 - 🖼 Theme customization
 - 🟢 Live typing indicators
