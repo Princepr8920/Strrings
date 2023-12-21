@@ -31,7 +31,7 @@ Strrings is a modern and interactive chat application that brings people togethe
 - **AWS**
 - **Node Mailer**
 - **Firebase cloud messageing**
-- **Mocha chai**
+- **Mocha, chai**
 - **Json Web Token**
 - **Passport**
 - **Multer**
