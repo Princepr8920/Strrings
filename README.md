@@ -31,6 +31,11 @@ Strrings is a modern and interactive chat application that brings people togethe
 - **AWS**
 - **Node Mailer**
 - **Firebase cloud messageing**
+- **Mocha chai**
+- **Json Web Token**
+- **Passport**
+- **Multer**
+- **Sharp**
 
 ## Getting Started
 
@@ -62,7 +67,7 @@ Contributions are welcome! If you find a bug or have a feature request, please o
 This project is licensed under the ISC License.
 
 ### Connect with Me
-Website: https://www.strrings.com/ 
+Website: https://www.strrings.com
 Email: Princepr8920@gmail.com
 
 <p align="center">
