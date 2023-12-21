@@ -32,15 +32,17 @@ const express = require("express"),
   (cloudMessaging = require("./loaders/fcm"));
 
 app.use(helmet());
+
 app.use(
   helmet.contentSecurityPolicy({
     useDefaults: true,
     directives: {
+      defaultSrc: ["'self'"],
       scriptSrc: ["'self'", 'https://www.gstatic.com'],
-      'script-src': ["'self'"],
-      'style-src': ["'self'"],
-      'img-src': ["'self'", "https:", "data:", 'https://d34ct18kvr7jx3.cloudfront.net'],
-      connectSrc: ["'self'", 'https://firebaseinstallations.googleapis.com', 'https://fcmregistrations.googleapis.com'],
+      styleSrc: ["'self'", 'https://fonts.googleapis.com','https://cdnjs.cloudflare.com'],
+      fontSrc: ["'self'", 'https://fonts.googleapis.com','https://fonts.gstatic.com','https://cdnjs.cloudflare.com' ],
+      imgSrc: ["'self'", "https:", "data:", 'https://d34ct18kvr7jx3.cloudfront.net','https://images.unsplash.com'],
+      connectSrc: ["'self'", 'https://firebaseinstallations.googleapis.com', 'https://fcmregistrations.googleapis.com','https://d34ct18kvr7jx3.cloudfront.net' ],
       objectSrc: ["'none'"],
     },
   })

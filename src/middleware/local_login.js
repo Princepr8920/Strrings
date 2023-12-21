@@ -13,7 +13,7 @@ const local_login = async (req, res, next) => {
       req.login(user, async function (error) {
         if (error) return next(error);
         // This setup is for two-step-verification if it has enabled
-        req.user = user;
+       // req.user = user; //uncomment for testing purpose only
 
         if (user.security.two_step_verification) {
           try {
