@@ -1,5 +1,5 @@
-const { currentBatch } = require("../socketServices/dataBatch");
-const { database } = require("../../loaders/mongodb"),
+const { currentBatch } = require("../socketServices/dataBatch"),
+  { database } = require("../../loaders/mongodb"),
   chatDb = database("chatCollection");
 
 async function getUndeliveredMessages(userID) {

@@ -6,7 +6,7 @@ const signup = async (req, res, next) => {
     user: newUser,
     saveToken: ["signupToken"],
     tokenName: ["signupToken"],
-    deleteToken:null
+    deleteToken: null,
   });
 
   if (tokens.success) {
@@ -26,7 +26,7 @@ const signup = async (req, res, next) => {
       newUser: true,
     });
   } else {
-   return next(tokens); // It is an error
+    return next(tokens); // It will become an error
   }
 };
 

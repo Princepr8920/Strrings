@@ -1,8 +1,8 @@
 const {
-  deleteMessage,
-  deleteAllMessage,
-} = require("../chatServices/deleteData");
-const { currentBatch } = require("./dataBatch");
+    deleteMessage,
+    deleteAllMessage,
+  } = require("../chatServices/deleteData"),
+  { currentBatch } = require("./dataBatch");
 
 function deleteEvents(socket, users) {
   socket.on("delete-message", async ({ contactID, messageToDelete }) => {

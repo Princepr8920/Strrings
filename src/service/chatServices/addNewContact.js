@@ -1,5 +1,5 @@
-const { Update_Error } = require("../handleErrors");
-const { database } = require("../../loaders/mongodb"),
+const { Update_Error } = require("../handleErrors"),
+  { database } = require("../../loaders/mongodb"),
   chatDb = database("chatCollection"),
   userDb = database("userCollection");
 

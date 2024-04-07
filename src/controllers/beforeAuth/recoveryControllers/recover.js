@@ -1,9 +1,9 @@
-const { Verificaiton_Error } = require("../../../service/handleErrors");
-(emailSender = require("../../../service/confirmationCode")),
-  (sendNewEmail = new emailSender()),
-  (createToken = require("../../../service/createToken")),
-  ({ database } = require("../../../loaders/mongodb")),
-  (userDb = database("userCollection"));
+const { Verificaiton_Error } = require("../../../service/handleErrors"),
+  emailSender = require("../../../service/confirmationCode"),
+  sendNewEmail = new emailSender(),
+  createToken = require("../../../service/createToken"),
+  { database } = require("../../../loaders/mongodb"),
+  userDb = database("userCollection");
 
 const recoverPassword = async (req, res, next) => {
   try {
@@ -13,14 +13,14 @@ const recoverPassword = async (req, res, next) => {
 
       const tokens = await createToken({
         user,
-        saveToken: ["requestsToken"],
-        tokenName: ["requestsToken"],
-        deleteToken:null
+        saveToken: ["requestToken"],
+        tokenName: ["requestToken"],
+        deleteToken: null,
       });
 
       if (tokens.success) {
-        const { requestsToken } = tokens.createdTokens;
-        const link = `https://www.strrings.com/account/verify/${requestsToken}`;
+        const { requestToken } = tokens.createdTokens;
+        const link = `https://www.strrings.com/account/verify/${requestToken}`;
         const isLinkSend = await sendNewEmail.sendResetPasswordLink({
           username,
           email,

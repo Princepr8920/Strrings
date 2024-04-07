@@ -38,7 +38,7 @@ const logout = async function (req, res, next) {
           "tokens.refreshToken": "",
           "tokens.socketToken": "",
           "tokens.emailVerificationToken": "",
-          "tokens.requestsToken": "",
+          "tokens.requestToken": "",
           "tokens.securityToken": "",
           userRequests: {},
           confirmationCode: {},

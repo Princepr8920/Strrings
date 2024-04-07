@@ -3,7 +3,7 @@ const { Verificaiton_Error } = require("../../../service/handleErrors"),
   SECURE_PASSWORD = new passwordService(),
   createToken = require("../../../service/createToken");
 
-  // When user want to delete their account. He/she have to confirm their access with the security lock
+  // When user want to delete their account. He/she will have to confirm their access with the security lock
 
 const securityLock = async (req, res, next) => {
   const { securityCode } = req.body;

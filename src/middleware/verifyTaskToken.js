@@ -13,7 +13,7 @@ const verifyTaskToken = async (req, res, next) => {
   const pathWithCookie = {
     change_once: [
       [`/user/password/setnewpassword/${getCookies?.change_once}`],
-      "requestsToken",
+      "requestToken",
     ],
     welcome_cookies: [
       [

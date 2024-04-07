@@ -23,7 +23,7 @@ const verifyUserEmail = async (req, res, next) => {
             $set: {
               email: user?.userRequests.emailRequest.requestedEmail,
               "tokens.emailVerificationToken": "",
-              "userRequests.emailRequest": {}, //Remove request from email request
+              "userRequests.emailRequest": {}, //Remove request from Db email request object
             },
             $push: {
               "user_logs.email_logs": {
@@ -47,12 +47,8 @@ const verifyUserEmail = async (req, res, next) => {
             sameSite: "strict",
           });
           return res.status(200).json({
-            updated: {
-              email: updatedUser.value.email,
-              username: updatedUser.value.username,
-            },
             success: true,
-            message: "Information updated successfully",
+            message: "Email updated successfully",
           });
         } else {
           throw new Update_Error("Something went wrong!", 500);

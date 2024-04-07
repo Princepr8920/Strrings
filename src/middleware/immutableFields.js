@@ -3,7 +3,7 @@ async function immutableFields(req, res, next) {
   let data = req.body;
 
 
-// This middleware prevent to change below fields by user
+// This middleware will prevent to change below fields by user
 
   let fields = [
     "userID",
@@ -29,7 +29,7 @@ async function immutableFields(req, res, next) {
 
   if (
     data.hasOwnProperty("email") &&
-    path !== "/api/user/account/manage/unique/email&username"
+    path !== "/api/user/account/update/email"
     // Prevent to change email without verificaiton
   ) {
     delete data.email;

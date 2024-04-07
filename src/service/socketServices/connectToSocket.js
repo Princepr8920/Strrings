@@ -1,5 +1,5 @@
-const { markAsDelivered } = require("../chatServices/delivery");
-const getLastMessage = require("../chatServices/getLastMessage");
+const { markAsDelivered } = require("../chatServices/delivery"),
+ getLastMessage = require("../chatServices/getLastMessage");
 
 function connectToSocket(socket, { users, names }) {
   socket.on("user-online", async () => {

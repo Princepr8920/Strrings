@@ -27,8 +27,8 @@ const setNewPassword = async (req, res, next) => {
       });
 
       await userDb.updateOne(
-        { "tokens.requestsToken": token },
-        { $set: { "tokens.requestsToken": "" } }
+        { "tokens.requestToken": token },
+        { $set: { "tokens.requestToken": "" } }
       );
 
       return res.status(200).json({

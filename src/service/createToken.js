@@ -13,7 +13,7 @@ async function createToken(options) {
     durations = {
       accessToken: "12h",
       refreshToken: "7d",
-      requestsToken: "30m",
+      requestToken: "30m",
       emailVerificationToken: "30m",
       signupToken: "30m",
       securityToken: "30m",

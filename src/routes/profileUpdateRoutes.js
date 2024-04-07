@@ -10,8 +10,10 @@ const express = require("express"),
   upload = require("../middleware/multer");
 
 const deleteAccount = require("../controllers/afterAuth/accountUpdate/deleteAccount"),
-  updateEmailAndUsername = require("../controllers/afterAuth/accountUpdate/updateAccount"),
-  updateUserInfo = require("../controllers/afterAuth/accountUpdate/updateUserInfo"),
+  {
+    updateUserInfo,
+    updateEmail,
+  } = require("../controllers/afterAuth/accountUpdate/updateUserInfo"),
   {
     verifyUserEmail,
     resendVerificaiton,
@@ -23,7 +25,6 @@ const deleteAccount = require("../controllers/afterAuth/accountUpdate/deleteAcco
     getContactAvatar,
   } = require("../controllers/afterAuth/accountUpdate/updateAvatar"),
   mustVerifiedAccount = require("../middleware/ensureVerified");
-
 
 //profile management related routes
 
@@ -40,15 +41,15 @@ router.patch(
 router.get("/api/user/remove-avatar", removeAvatar);
 
 router.patch(
-  "/api/user/account/manage/unique/email&username",
+  "/api/user/account/update/email",
   mustVerifiedAccount,
   EmailOrUsernameValidation,
   validator,
-  updateEmailAndUsername
+  updateEmail
 );
 
 router.patch(
-  "/api/user/account/manage/information",
+  "/api/user/account/update/information",
   userInformationValidation,
   validator,
   updateUserInfo

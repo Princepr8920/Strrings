@@ -1,5 +1,5 @@
-const emailSender = require("../../../service/confirmationCode");
-const sendNewEmail = new emailSender();
+const emailSender = require("../../../service/confirmationCode"),
+ sendNewEmail = new emailSender();
 
 const resendOtp = async (req, res) => {
   let path = req.path;

@@ -1,15 +1,15 @@
-const { MongoClient } = require("mongodb");
-(uri = process.env.MONGO_DB_URL),
-  (client = new MongoClient(uri, {
+const { MongoClient } = require("mongodb"),
+  uri = process.env.MONGO_DB_URL,
+  client = new MongoClient(uri, {
     useNewUrlParser: true, // Use the new parser (required for MongoDB >= 3.1)
     useUnifiedTopology: true, // Use the new Server and Engine
     retryWrites: true, // Retry write operations upon transient network errors
-  })),
-  ({ USER_SCHEMA } = require("../models/userSchema")),
-  ({ CHAT_SCHEMA } = require("../models/chatSchema")),
-  (connection = { isConnected: false });
+  }),
+  { USER_SCHEMA } = require("../models/userSchema"),
+  { CHAT_SCHEMA } = require("../models/chatSchema"),
+  connection = { isConnected: false };
 
-async function connectToDatebase() {
+async function connectToDatabase() {
   try {
     await client.connect();
     console.log(`Database connected successfully 💽`);
@@ -35,13 +35,18 @@ async function connectToDatebase() {
         console.error(error);
       });
 
-    addNewProperty({
-      collection: "chatCollection", //enter collection name to update schema
-      modelObject: CHAT_SCHEMA, // enter schema to update
+    modifyCollectionModel({
+      collection: "userCollection", //enter collection name to update schema
+      modelObject: USER_SCHEMA, // enter schema to update
       modify: false, // change to true if we need to update schema
+      removeOldProps: null
+      /* 
+      set an object like this {filter:{},propsToRemove:{property1:"",property2:""}} if we want to remove propeties from all documents
+      set an object like this {filter:{userID:"87r67rkfhiywee7343"},propsToRemove:{property1:"",property2:""}} if we want to remove propeties from particular document
+      */
     });
   } catch (err) {
-    connection.isConnected = false;
+    connection.isConnected = false; 
     console.error(err);
   }
 }
@@ -63,17 +68,31 @@ async function createCollectionWithSchema(options) {
       }
       return { collection, created: true };
     } else {
-      throw new Error("Database not connected ❌");
+      throw new Error("Database couldn't be connected ❌");
     }
   } catch (error) {
     console.error(error);
   }
 }
 
-async function addNewProperty(options) {
-  const { collection, modelObject, modify } = options;
-  if (modify) {
+async function modifyCollectionModel(options) {
+  const { collection, modelObject, modify, removeOldProps } = options;
+  let isPropsRemoved = false;
+
+  if (removeOldProps) {
+    let removedProps = await removePropFromCollection(
+      collection,
+      removeOldProps.filter,
+      removeOldProps.propsToRemove
+    );
+    isPropsRemoved = removedProps.success;
+  } else {
+    isPropsRemoved = true;
+  }
+
+  if (isPropsRemoved && modify) {
     const DB = client.db("Strrings");
+
     DB.command(
       {
         collMod: collection,
@@ -93,6 +112,25 @@ function database(collection = "userCollection") {
   return db;
 }
 
+async function removePropFromCollection(
+  collection,
+  filter = {},
+  propsToRemove
+) {
+  try {
+    if (!collection) {
+      throw new Error("Properties couldn't be removed ❌");
+    }
+    await database(collection).updateMany(
+      filter, // Filter to match all documents
+      { $unset: propsToRemove } // Unset old properties
+    );
+  } catch (error) {
+    console.error(error);
+    return { error: error.message, success: false };
+  }
+}
+
 async function disconnectToDatabase() {
   await client.close();
   console.log("Database disconnected 🚫");
@@ -100,7 +138,7 @@ async function disconnectToDatabase() {
 }
 
 module.exports = {
-  connectToDatebase,
+  connectToDatabase,
   client,
   database,
   createCollectionWithSchema,

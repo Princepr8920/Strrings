@@ -1,5 +1,5 @@
-const { Validation_Error } = require("../handleErrors");
-const { database } = require("../../loaders/mongodb"),
+const { Validation_Error } = require("../handleErrors"),
+  { database } = require("../../loaders/mongodb"),
   chatDb = database("chatCollection");
 
 async function getBlockedContactsID(userID) {

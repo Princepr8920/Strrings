@@ -1,13 +1,12 @@
-const createToken = require("../../../service/createToken");
-const { formatDate } = require("../../../utils/userAge");
-(Secure = require("../../../utils/filterInfo")),
-  (SecureInfo = new Secure()),
-  (emailSender = require("../../../service/confirmationCode")),
-  (sendNewEmail = new emailSender()),
-  ({ database } = require("../../../loaders/mongodb")),
-  (userDb = database("userCollection")),
-  (activateAccount = require("../../../service/activateAccount")),
-  ({ firstLetterUpperCase } = require("../../../utils/caseSenstive"));
+const createToken = require("../../../service/createToken"),
+  Secure = require("../../../utils/filterInfo"),
+  SecureInfo = new Secure(),
+  emailSender = require("../../../service/confirmationCode"),
+  sendNewEmail = new emailSender(),
+  { database } = require("../../../loaders/mongodb"),
+  userDb = database("userCollection"),
+  activateAccount = require("../../../service/activateAccount"),
+  { firstLetterUpperCase } = require("../../../utils/caseSenstive");
 
 const verifyNewUser = async (req, res, next) => {
   const confirmationCode = req.body.code;
@@ -41,7 +40,7 @@ const verifyNewUser = async (req, res, next) => {
       user: getAccount.activatedAccount,
       saveToken: ["refreshToken", "socketToken"],
       tokenName: ["refreshToken", "accessToken", "socketToken"],
-      deleteToken:null
+      deleteToken: null,
     });
 
     if (tokens.success) {
@@ -65,11 +64,9 @@ const verifyNewUser = async (req, res, next) => {
         excludeInfo
       );
 
-      firstLetterUpperCase(filteredUserInfo, ["username", "email"]); // To do first letter upper case
-
       res.cookie("strrings_connect", refreshToken, {
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000, 
+        maxAge: 7 * 24 * 60 * 60 * 1000,
         secure: true,
         sameSite: "strict",
       });
@@ -80,9 +77,6 @@ const verifyNewUser = async (req, res, next) => {
         sameSite: "strict",
       });
 
-      filteredUserInfo.birthday = formatDate(
-        new Date(filteredUserInfo.birthday)
-      );
       return res.status(200).json({
         user: filteredUserInfo,
         accessToken,

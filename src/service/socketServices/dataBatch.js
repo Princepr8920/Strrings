@@ -1,6 +1,6 @@
-const { v4: uuidv4 } = require("uuid");
-const saveMessage = require("../chatServices/saveData");
-const currentBatch = {};
+const { v4: uuidv4 } = require("uuid"),
+  saveMessage = require("../chatServices/saveData"),
+  currentBatch = {};
 
 async function batchData(data) {
   const { sender, receiver, message } = data;
@@ -19,7 +19,10 @@ async function batchData(data) {
     receiverBatch[sender] = [];
   }
 
-  if (senderBatch[receiver].length >= 100 || receiverBatch[sender].length >= 100) {
+  if (
+    senderBatch[receiver].length >= 100 ||
+    receiverBatch[sender].length >= 100
+  ) {
     let { newBatch, success } = await saveMessage(
       [sender, receiver],
       [senderBatch, receiverBatch]

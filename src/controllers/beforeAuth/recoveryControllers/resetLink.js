@@ -6,10 +6,10 @@ const resetPasswordLink = async (req, res, next) => {
   let { token } = req.params;
 
   return jwt.verify(token, process.env.JWT_SESSION_SECRET, async (err) => {
-    if (err) return res.sendStatus(403); // if jwt expire forbidden the request
+    if (err) return res.sendStatus(403); // if jwt token expired, forbidden the request
 
     try {
-      const user = await userDb.findOne({ "tokens.requestsToken": token });
+      const user = await userDb.findOne({ "tokens.requestToken": token });
       if (user) {
         res.cookie("change_once", token, {
           maxAge: 30 * 60 * 1000,

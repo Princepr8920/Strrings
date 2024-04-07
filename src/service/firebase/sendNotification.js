@@ -1,5 +1,5 @@
-const { getMessaging } = require("firebase-admin/messaging");
-const { database } = require("../../loaders/mongodb"),
+const { getMessaging } = require("firebase-admin/messaging"),
+ { database } = require("../../loaders/mongodb"),
   userDb = database("userCollection");
 
 async function pushNotification(userIDs, message) {

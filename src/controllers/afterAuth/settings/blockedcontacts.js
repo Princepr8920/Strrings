@@ -1,6 +1,5 @@
-const { Validation_Error } = require("../../../service/handleErrors");
-
-const { database } = require("../../../loaders/mongodb"),
+const { Validation_Error } = require("../../../service/handleErrors"),
+  { database } = require("../../../loaders/mongodb"),
   chatDb = database("chatCollection");
 
 blockedContacts = async (req, res, next) => {
@@ -10,7 +9,7 @@ blockedContacts = async (req, res, next) => {
       let { blocked_contacts } = getBlockedContacts;
 
       if (!blocked_contacts.length) {
-        // If blocked_contacts is an empty array so return it immedately
+        // If blocked_contacts is an empty array so taht return it immedately
         return res.status(200).json({ blocked_contacts, success: true });
       }
 

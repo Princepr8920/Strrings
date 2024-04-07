@@ -4,32 +4,32 @@ const express = require("express"),
   cors = require("cors"),
   dotenv = require("dotenv").config(),
   helmet = require("helmet"),
-  hpp = require("hpp");
-(mongoSanitize = require("express-mongo-sanitize")),
-  (cookieParser = require("cookie-parser")),
-  (corsOptions = require("./config/corsOptions")),
-  (session = require("./loaders/express_session")),
-  (mongodb = require("./loaders/mongodb")),
-  (logger = require("morgan")),
-  (authRoutes = require("./routes/authRoutes")),
-  (profileUpdateRoutes = require("./routes/profileUpdateRoutes")),
-  (mainRoutes = require("./routes/mainRoutes")),
-  (chatRoutes = require("./routes/chatRoutes"));
-(settingRoutes = require("./routes/settingsRoutes")),
-  ({ passport_init, passport_session } = require("./loaders/passport")),
-  (handleErrors = require("./middleware/checkErrors")),
-  (Credentials = require("./middleware/credentials")),
-  (localAuth = require("./service/localAuth")),
-  (verifyJWT = require("./middleware/verifyJwt")),
-  (isAuthOk = require("./middleware/ensureAuth")),
-  (bodyParser = require("body-parser")),
-  ({ preValidator } = require("./middleware/validator")),
-  (immutableFields = require("./middleware/immutableFields")),
-  (port = process.env.PORT || 5000),
-  (mySocket = require("./service/socketServices/socketIo")),
-  (http = require("http")),
-  (server = http.createServer(app)),
-  (cloudMessaging = require("./loaders/fcm"));
+  hpp = require("hpp"),
+  mongoSanitize = require("express-mongo-sanitize"),
+  cookieParser = require("cookie-parser"),
+  corsOptions = require("./config/corsOptions"),
+  session = require("./loaders/express_session"),
+  mongodb = require("./loaders/mongodb"),
+  logger = require("morgan"),
+  authRoutes = require("./routes/authRoutes"),
+  profileUpdateRoutes = require("./routes/profileUpdateRoutes"),
+  mainRoutes = require("./routes/mainRoutes"),
+  chatRoutes = require("./routes/chatRoutes"),
+  settingRoutes = require("./routes/settingsRoutes"),
+  { passport_init, passport_session } = require("./loaders/passport"),
+  handleErrors = require("./middleware/checkErrors"),
+  Credentials = require("./middleware/credentials"),
+  localAuth = require("./service/localAuth"),
+  verifyJWT = require("./middleware/verifyJwt"),
+  isAuthOk = require("./middleware/ensureAuth"),
+  bodyParser = require("body-parser"),
+  { preValidator } = require("./middleware/validator"),
+  immutableFields = require("./middleware/immutableFields"),
+  port = process.env.PORT || 5000,
+  mySocket = require("./service/socketServices/socketIo"),
+  http = require("http"),
+  server = http.createServer(app),
+  cloudMessaging = require("./loaders/fcm");
 
 app.use(helmet());
 
@@ -38,11 +38,30 @@ app.use(
     useDefaults: true,
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", 'https://www.gstatic.com'],
-      styleSrc: ["'self'", 'https://fonts.googleapis.com','https://cdnjs.cloudflare.com'],
-      fontSrc: ["'self'", 'https://fonts.googleapis.com','https://fonts.gstatic.com','https://cdnjs.cloudflare.com' ],
-      imgSrc: ["'self'", "https:", "data:", 'https://d34ct18kvr7jx3.cloudfront.net','https://images.unsplash.com'],
-      connectSrc: ["'self'", 'https://firebaseinstallations.googleapis.com', 'https://fcmregistrations.googleapis.com','https://d34ct18kvr7jx3.cloudfront.net' ],
+      scriptSrc: ["'self'", "https://www.gstatic.com"],
+      styleSrc: [
+        "'self'",
+        "https://fonts.googleapis.com",
+        "https://cdnjs.cloudflare.com",
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com",
+        "https://cdnjs.cloudflare.com",
+      ],
+      imgSrc: [
+        "'self'",
+        "https:",
+        "data:",
+        "https://d34ct18kvr7jx3.cloudfront.net",
+      ],
+      connectSrc: [
+        "'self'",
+        "https://firebaseinstallations.googleapis.com",
+        "https://fcmregistrations.googleapis.com",
+        "https://d34ct18kvr7jx3.cloudfront.net",
+      ],
       objectSrc: ["'none'"],
     },
   })
@@ -62,7 +81,7 @@ app.use(session);
 app.use(passport_init);
 app.use(passport_session);
 localAuth();
-mongodb.connectToDatebase("Strrings");
+mongodb.connectToDatabase("Strrings");
 mySocket(server); // To start socket
 cloudMessaging(); // To start Firebase cloud messaging service
 app.use(express.static(path.join(__dirname, "../public")));
@@ -85,9 +104,8 @@ app.use(mainRoutes);
 app.use(chatRoutes);
 app.use(settingRoutes);
 
-
 app.get("/*", function (req, res) {
-  return res.sendFile(path.join(__dirname, "../public", "index.html"));
+  sendFile(path.join(__dirname, "../public", "index.html"));
 });
 
 server.listen(port, (err) => {

@@ -1,8 +1,7 @@
 const express = require("express"),
   router = express.Router(),
-  upload = require("../middleware/multer"),
   logout = require("../controllers/afterAuth/settings/logout"),
-  {appearance,customBackground} = require("../controllers/afterAuth/settings/appearance"),
+  { appearance } = require("../controllers/afterAuth/settings/appearance"),
   {
     setNotifications,
     notification_permission,
@@ -21,12 +20,9 @@ const express = require("express"),
     updateSecurity,
   } = require("../controllers/afterAuth/settings/updateSecurity");
 
-
 // settings rotutes
 
 router.put("/api/account/settings/appearance", appearance);
-
-router.put("/api/account/settings/appearance/custom-bg",upload("current_bg",['image/jpeg', 'image/png']), customBackground);
 
 router.get("/api/account/settings/blocked-contacts", blockedContacts);
 

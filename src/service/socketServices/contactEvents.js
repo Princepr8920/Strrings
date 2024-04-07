@@ -1,8 +1,8 @@
-const { blockUser, unblockUser } = require("../chatServices/blockUser");
-const addNewContact = require("../chatServices/addNewContact");
-const removeContact = require("../chatServices/removeContact");
+const { blockUser, unblockUser } = require("../chatServices/blockUser"),
+  addNewContact = require("../chatServices/addNewContact"),
+  removeContact = require("../chatServices/removeContact");
 
-function contactEvents(socket,{users,allBlockedUserIDs}) {
+function contactEvents(socket, { users, allBlockedUserIDs }) {
   socket.on("add-to-chats", async (contactID) => {
     let data = await addNewContact({ contactID, userID: users[socket.id] });
     socket.emit("user-added-to-chats", data);

@@ -1,10 +1,11 @@
-const { Validation_Error } = require("../../../service/handleErrors");
-const { database } = require("../../../loaders/mongodb"),
-  chatDb = database("chatCollection");
+const { Validation_Error } = require("../../../service/handleErrors"),
+  { database } = require("../../../loaders/mongodb"),
+  userDb = database("userCollection");
+chatDb = database("chatCollection");
 
 getAllUsers = async (req, res, next) => {
   try {
-    const getContacts = await chatDb.findOne({ username: req.user.username });
+    const getContacts = await chatDb.findOne({ userID: req.user.userID });
 
     if (getContacts) {
       let { blocked_contacts, contacts } = getContacts;
@@ -45,13 +46,12 @@ getAllUsers = async (req, res, next) => {
       const contactArray = await userDb
         .aggregate(aggregationPipeline)
         .toArray();
-
       return res.status(200).json({ contacts: contactArray, success: true });
     } else {
       throw new Validation_Error("Something went wrong!", 500);
     }
   } catch (error) {
-    error = {...error,message:"Couldn't fetch user chats"}
+    error = { ...error, message: "Couldn't fetch user chats" };
     return next(error);
   }
 };

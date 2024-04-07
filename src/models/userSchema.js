@@ -5,14 +5,7 @@ let USER_SCHEMA = {
     $jsonSchema: {
       bsonType: "object",
       title: "User Object Validation",
-      required: [
-        "username",
-        "password",
-        "first_name",
-        "email",
-        "last_seen",
-        "joined_at",
-      ],
+      required: ["username", "password", "email", "last_seen", "joined_at"],
       additionalProperties: false,
       properties: {
         _id: { bsonType: "objectId" },
@@ -20,15 +13,6 @@ let USER_SCHEMA = {
           bsonType: "string",
           minLength: 3,
           description: "'username' must be a string and is required",
-        },
-        first_name: {
-          bsonType: "string",
-          description: "'first_name' must be a string and is required",
-        },
-        last_name: {
-          bsonType: "string",
-          maxLength: 30,
-          description: "'last_name' must be a string and is required",
         },
         password: {
           bsonType: "string",
@@ -46,7 +30,6 @@ let USER_SCHEMA = {
         provider: { bsonType: "string" },
         last_seen: { bsonType: "date" },
         joined_at: { bsonType: "date" },
-        birthday: { bsonType: "date" },
         events: {
           bsonType: "array",
           items: {
@@ -82,17 +65,6 @@ let USER_SCHEMA = {
             dark_mode: {
               enum: ["on", "off", "auto", "system_default"],
               description: "Must be either on , off, system_default or auto",
-            },
-            background: {
-              bsonType: "object",
-              additionalProperties: false,
-              properties: {
-                bg_type: {
-                  enum: ["image", "solid_colour"],
-                },
-                current_bg: { bsonType: "string" },
-                custom_bg: { bsonType: "bool" },
-              },
             },
           },
         },
@@ -156,7 +128,7 @@ let USER_SCHEMA = {
           bsonType: "object",
           additionalProperties: false,
           properties: {
-            requestsToken: { bsonType: "string" },
+            requestToken: { bsonType: "string" },
             signupToken: { bsonType: "string" },
             loginToken: { bsonType: "string" },
             securityToken: { bsonType: "string" },
@@ -196,14 +168,21 @@ let USER_SCHEMA = {
               },
             },
             visit_logs: {
-              bsonType: "array",
-              items: {
-                bsonType: "object",
-                additionalProperties: false,
-                properties: {
-                  visit_count: { bsonType: "int" },
-                  time_spent: { bsonType: "string" },
-                  visited_on: { bsonType: "date" },
+              bsonType: "object",
+              additionalProperties: false,
+              properties: {
+                visit_counter: { bsonType: "int" },
+                visits: {
+                  bsonType: "array",
+                  items: {
+                    bsonType: "object",
+                    additionalProperties: false,
+                    properties: {
+                      visit_count: { bsonType: "int" },
+                      time_spent: { bsonType: "string" },
+                      visited_on: { bsonType: "date" },
+                    },
+                  },
                 },
               },
             },
@@ -258,15 +237,10 @@ async function setDefaultValues(info, client) {
       username_logs: [
         { username: username, updated_on: new Date(), update_count: 0 },
       ],
-      visit_logs: [],
+      visit_logs: { visit_counter: 0, visits: [] },
     },
     appearance: {
       dark_mode: "off",
-      background: {
-        bg_type: "solid_colour",
-        current_bg: "white",
-        custom_bg: false,
-      },
     },
     notifications: {
       message_notification: false,

@@ -2,21 +2,18 @@ const { body, validationResult } = require("express-validator"),
   passwordService = require("../service/passwordService"),
   SECURE_PASSWORD = new passwordService(),
   { database } = require("../loaders/mongodb"),
-  userDb = database("userCollection"),
-  { isUserOldEnough, tooOld } = require("../utils/userAge");
+  userDb = database("userCollection");
 
 /// preValidator for required fields
 
 const preValidator = (req, res, next) => {
   const requiredFields = {
-    first_name: "First Name",
     username: "Username",
     password: "Password",
     new_password: "New password",
     current_password: "Current password",
     confirm_password: "Confirm password",
     email: "Email",
-    birthday: "Birthday",
   };
   const fields = req.body;
   const names = Object.keys(requiredFields);
@@ -84,52 +81,6 @@ const recoverPasswordValidation = [
 ///// profile management validation
 
 const userInformationValidation = [
-  body("first_name")
-    .trim()
-    .notEmpty()
-    .withMessage("Enter a first name")
-    .bail()
-    .isLength({ min: 1, max: 20 })
-    .withMessage("First name should be minimum 3 and maximum 20 characters")
-    .matches(/^[\w\.]+$/)
-    .withMessage(
-      "First name can only use letters, numbers, underscores and periods."
-    ),
-
-  body("last_name")
-    .if((value) => value)
-    .trim()
-    .isLength({ max: 20 })
-    .withMessage("Last name should be maximum 20 characters")
-    .matches(/^[\w\.]+$/)
-    .withMessage(
-      "Last name can only use letters, numbers, underscores and periods."
-    ),
-  body("status")
-    .if((value) => value)
-    .trim()
-    .isLength({ max: 20 })
-    .withMessage("Last name should be maximum 20 characters"),
-
-  body("birthday")
-    .trim()
-    .notEmpty()
-    .withMessage("Enter your Birthday")
-    .isDate({ format: "YYYY-MM-DD" })
-    .withMessage("Enter a valid birthday")
-    .bail()
-    .custom(isUserOldEnough) // Validate the date field and check if the user is at least 16 years old
-    .withMessage("You must be at least 16 years old")
-    .custom(tooOld)
-    .withMessage("Enter a valid birthday")
-    .bail()
-    .matches(/^(19|20)\d{2}\-(0[1-9]|1[0-2])\-(0[1-9]|1\d|2\d|3[01])$/)
-    .withMessage("Enter a valid birthday"),
-];
-
-
-
-const EmailOrUsernameValidation = [
   body("username")
     .if((value, { req }) => req.body.hasOwnProperty("username"))
     .trim()
@@ -137,7 +88,7 @@ const EmailOrUsernameValidation = [
     .withMessage("Enter a username")
     .bail()
     .isLength({ min: 3, max: 20 })
-    .withMessage("Username should be minimum 3 and maximum 30 characters")
+    .withMessage("Username should be minimum 3 and maximum 30 characters long")
     .matches(/^[\w\.]+$/)
     .withMessage(
       "Username can only use letters, numbers, underscores and periods."
@@ -149,7 +100,29 @@ const EmailOrUsernameValidation = [
       }
       return true;
     }),
+  body("status")
+    .if((value) => value)
+    .trim()
+    .isLength({ max: 20 })
+    .withMessage("Status should be maximum 20 characters long"),
 
+  // body("birthday")
+  //   .trim()
+  //   .notEmpty()
+  //   .withMessage("Enter your Birthday")
+  //   .isDate({ format: "YYYY-MM-DD" })
+  //   .withMessage("Enter a valid birthday")
+  //   .bail()
+  //   .custom(isUserOldEnough) // Validate the date field and check if the user is at least 16 years old
+  //   .withMessage("You must be at least 16 years old")
+  //   .custom(tooOld)
+  //   .withMessage("Enter a valid birthday")
+  //   .bail()
+  //   .matches(/^(19|20)\d{2}\-(0[1-9]|1[0-2])\-(0[1-9]|1\d|2\d|3[01])$/)
+  //   .withMessage("Enter a valid birthday"),
+];
+
+const EmailOrUsernameValidation = [
   body("email")
     .if((value, { req }) => req.body.hasOwnProperty("email"))
     .trim()
@@ -323,20 +296,19 @@ const signupValidation = [
   }),
 ];
 
-// Signin validation 
+// Signin validation
 
 const signinValidation = [
   body("email")
-  .if((value, { req }) => req.body.hasOwnProperty("email"))
-  .trim()
-  .notEmpty()
-  .withMessage("Enter a email address")
-  .bail()
-  .isEmail()
-  .withMessage("Invalid email address")
-  .normalizeEmail()
-]
-
+    .if((value, { req }) => req.body.hasOwnProperty("email"))
+    .trim()
+    .notEmpty()
+    .withMessage("Enter a email address")
+    .bail()
+    .isEmail()
+    .withMessage("Invalid email address")
+    .normalizeEmail(),
+];
 
 // for verification code valdiation
 const codeValidation = [

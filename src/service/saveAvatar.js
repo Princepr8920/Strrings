@@ -1,5 +1,5 @@
-const { Service_Error } = require("./handleErrors");
-const useSharp = require("./sharpeImgService"),
+const { Service_Error } = require("./handleErrors"),
+  useSharp = require("./sharpeImgService"),
   { upload } = require("./awsService");
 
 async function imageSaver(image) {
@@ -7,9 +7,10 @@ async function imageSaver(image) {
     let resizedImages = await useSharp(image, {
       small: { width: 48, height: 48 },
       large: {
-        width: null,
-        height: null,
+        width: 512,
+        height: 512,
       },
+      //we can use { width: null, height: null } if we want to save image in original size
     }); // To resize the image in multiple sizes
     let isUploaded = await upload(
       resizedImages?.imgInDifferentSizes,

@@ -1,5 +1,5 @@
-const nodeMailer = require("nodemailer");
-const currentDate = require("../utils/date");
+const nodeMailer = require("nodemailer"),
+  currentDate = require("../utils/date");
 
 const sender = {
   user: process.env.APP_MAIL,

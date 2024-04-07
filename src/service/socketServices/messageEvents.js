@@ -1,7 +1,7 @@
-const { markAsRead, readNow, readInBatch } = require("../chatServices/read");
-const { deliveredNow } = require("../chatServices/delivery");
-const pushNotification = require("../firebase/sendNotification");
-const { batchData, currentBatch } = require("./dataBatch");
+const { markAsRead, readNow, readInBatch } = require("../chatServices/read"),
+  { deliveredNow } = require("../chatServices/delivery"),
+  pushNotification = require("../firebase/sendNotification"),
+  { batchData, currentBatch } = require("./dataBatch");
 
 function messageEvents(socket, { users, allBlockedUserIDs, openedChats }) {
   socket.on("send", async ({ receiver, message }) => {

@@ -1,6 +1,6 @@
-const createUniqueIndex = require("./createUniqueIndex");
-const { Verificaiton_Error } = require("./handleErrors");
-const { database, client } = require("../loaders/mongodb"),
+const createUniqueIndex = require("./createUniqueIndex"),
+  { Verificaiton_Error } = require("./handleErrors"),
+  { database, client } = require("../loaders/mongodb"),
   userDb = database("userCollection"),
   chatDb = database("chatCollection"),
   { v4: uuidv4 } = require("uuid");

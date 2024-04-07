@@ -24,7 +24,7 @@ async function twoStepVerification(req, res, next) {
             secure: true,
             sameSite: "strict",
           });
-          req.user = user; /// we set the req.user = user only for testing
+          // req.user = user; /// uncomment it only for testing
           return next();
         } else {
           return next(verifiedUser); // Used for handle error ❌

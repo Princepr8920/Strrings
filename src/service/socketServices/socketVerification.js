@@ -18,7 +18,7 @@ async function verifySocketToken(token) {
         },
       },
     ];
-    // we use aggrigation pipeline to filter out the useful fields
+    // we will use aggrigation pipeline to filter out the useful fields
     const checkInDb = await userDb.aggregate(aggregationPipeline).toArray();
 
     if (checkInDb.length) {
@@ -31,17 +31,16 @@ async function verifySocketToken(token) {
           );
         }
       });
-      let timestamp = new Date();
-      let visitLogs = checkInDb[0]?.user_logs?.visit_logs;
-      let visitCounter =
-        checkInDb[0]?.user_logs?.visit_logs[visitLogs.length - 1]
-          ?.visit_count || 0;
+
       /* we will use it for calculating 
       the user time that spent to use this app */
       return {
-        userData: checkInDb[0],
-        timestamp,
-        visitCounter,
+        user: {
+          username: checkInDb[0].username,
+          userID: checkInDb[0].userID,
+          timestamp: new Date(),
+          visitCounter: checkInDb[0]?.user_logs?.visit_logs?.visit_counter || 0,
+        },
         success: true,
       };
     } else {

@@ -1,6 +1,6 @@
-const saveMessage = require("../chatServices/saveData");
-const { currentBatch } = require("./dataBatch");
-const updateUserSession = require("./userSession");
+const saveMessage = require("../chatServices/saveData"),
+  { currentBatch } = require("./dataBatch"),
+  updateUserSession = require("./userSession");
 
 function disconnectSocket(socket, { users, names, userInfo, openedChats }) {
   socket.on("disconnect", async () => {

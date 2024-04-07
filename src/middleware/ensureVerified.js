@@ -1,13 +1,12 @@
-const { Verificaiton_Error } = require("../service/handleErrors");
-const { smallLetters } = require("../utils/caseSenstive");
-const { database } = require("../loaders/mongodb"),
+const { Verificaiton_Error } = require("../service/handleErrors"),
+  { smallLetters } = require("../utils/caseSenstive"),
+  { database } = require("../loaders/mongodb"),
   userDb = database("userCollection");
 
-
-/* This middleware check if an unverified
+/* This middleware will check if an unverified
  user account exist in db and if new user want to 
  create new account with same email and username
-  this middleware delete unverified account first*/
+  this middleware will delete unverified account first*/
 
 async function mustVerifiedAccount(req, res, next) {
   let userInfo = smallLetters(req.body, ["email"]);
@@ -16,11 +15,7 @@ async function mustVerifiedAccount(req, res, next) {
   });
 
   try {
-    if (
-      user &&
-      user.userID === "" &&
-      !user.verification
-    ) {
+    if (user && user.userID === "" && !user.verification) {
       const isDeleted = await userDb.deleteOne({ email: user.email });
       if (isDeleted.deletedCount) {
         next();

@@ -1,5 +1,5 @@
-const { formatDate } = require("../../../utils/userAge"); 
-const jwt = require("jsonwebtoken"),
+const { formatDate } = require("../../../utils/userAge"),
+  jwt = require("jsonwebtoken"),
   createToken = require("../../../service/createToken"),
   Secure = require("../../../utils/filterInfo"),
   SecureInfo = new Secure(),
@@ -25,8 +25,8 @@ const refresh = async (req, res, next) => {
 
     req.logout((err) => {
       /*  if user two-step-verification is enabled but not 
-      completed by user so that server deletes user session
-       from server that what we use req.logout() here
+      completed by user so that server will delete user session
+       from server that why we are using req.logout() here
        */ if (err) return err;
     });
     return res
@@ -58,7 +58,7 @@ const refresh = async (req, res, next) => {
             $set: {
               "tokens.refreshToken": "",
               "tokens.socketToken": "",
-              "tokens.requestsToken": "",
+              "tokens.requestToken": "",
             },
           } // remove expired token from db
         );
@@ -73,14 +73,13 @@ const refresh = async (req, res, next) => {
         user: payload,
         saveToken: [],
         tokenName: ["accessToken"],
-        deleteToken:null
+        deleteToken: null,
       });
       if (tokens.success) {
         const { accessToken } = tokens.createdTokens;
         const socketToken = user.tokens.socketToken;
         const userWithToken = SecureInfo.filterInfo(user);
         // We are passing socket token along with access token the duration of socket token is similar to refresh token
-        userWithToken.birthday = formatDate(new Date(userWithToken.birthday));
         return res.status(200).json({
           userWithToken,
           accessToken,

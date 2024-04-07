@@ -1,6 +1,6 @@
-const { deleteFile } = require("../../../service/awsService");
-const { Update_Error } = require("../../../service/handleErrors");
-const upload = require("../../../service/saveAvatar"),
+const { deleteFile } = require("../../../service/awsService"),
+  { Update_Error } = require("../../../service/handleErrors"),
+  upload = require("../../../service/saveAvatar"),
   { database } = require("../../../loaders/mongodb"),
   userDb = database("userCollection");
 
@@ -14,7 +14,7 @@ const updateAvatar = async (req, res, next) => {
         { "tokens.refreshToken": token },
         { $set: { picture } },
         {
-          returnDocument: "before", // It update the user object but return the user object before update
+          returnDocument: "before", // It will update the user object, but return the user object before update
         }
       );
       if (updatedInfo) {
@@ -70,7 +70,7 @@ const removeAvatar = async (req, res, next) => {
           },
         },
         {
-          returnDocument: "before", // It update the user object but return the user object before update
+          returnDocument: "before", // It will update the user object but return the user object before update
         }
       );
 

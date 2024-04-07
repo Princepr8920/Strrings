@@ -1,4 +1,3 @@
-const { formatDate } = require("../../../utils/userAge");
 const createToken = require("../../../service/createToken"),
   Secure = require("../../../utils/filterInfo"),
   SecureInfo = new Secure(),
@@ -11,7 +10,7 @@ const login = async (req, res, next) => {
     user: userInfo,
     saveToken: ["refreshToken", "socketToken"],
     tokenName: ["refreshToken", "accessToken", "socketToken"],
-    deleteToken: { requestsToken: "", loginToken: "" },
+    deleteToken: { requestToken: "", loginToken: "" },
   });
 
   if (tokens.success) {
@@ -49,7 +48,6 @@ const login = async (req, res, next) => {
     ];
 
     let filteredUserInfo = SecureInfo.filterInfo(userInfo, excludeInfo);
-    filteredUserInfo.birthday = formatDate(new Date(filteredUserInfo.birthday));
     return res.status(200).json({
       user: filteredUserInfo,
       accessToken,
