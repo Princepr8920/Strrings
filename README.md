@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://d34ct18kvr7jx3.cloudfront.net/assets/logo/strrings_logo.png" alt="Strrings Logo" width="200" height="200">
+  <img src="https://d34ct18kvr7jx3.cloudfront.net/assets/logo/logo192.png" alt="Strrings Logo" width="200" height="200">
 </p>
 
 # Strrings Chat Application
@@ -17,7 +17,6 @@ Strrings is a modern and interactive chat application that brings people togethe
 - 🔔 User login notification
 - ✔ Message Read receipts
 - 🔆 Dark mode
-- 🖼 Theme customization
 - 🟢 Live typing indicators
 - 🔔 Web push notification
 
