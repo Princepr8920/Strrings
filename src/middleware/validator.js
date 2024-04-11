@@ -43,6 +43,7 @@ const recoverPasswordValidation = [
           value,
           req.params.token
         );
+
         if (sameAsPrevious) {
           throw new Error("Previous passwords cannot be reused.");
         }
@@ -57,7 +58,7 @@ const recoverPasswordValidation = [
       "Use 8 or more characters with a mix of letters, numbers, and symbols."
     )
     .bail()
-    .matches(/[!@#$\{%\}^;:\.\/'\["&\]*\(\)]+/g)
+    .matches(/[!@#$\{%\}^;:\.\/'\["&\]+\-\*\(\)]+/g)
     .withMessage(
       "Your new password should have at least one special character."
     )
@@ -176,7 +177,7 @@ const passwordValidation = [
       "Use 8 or more characters with a mix of letters, numbers, and symbols."
     )
     .bail()
-    .matches(/[!@#$\{%\}^;:\.\/'\["&\]*\(\)]+/g)
+    .matches(/[!@#$\{%\}^;:\.\/'\["&\]+\-\*\(\)]+/g)
     .withMessage(
       "Your new password should have at least one special character."
     )
@@ -283,7 +284,7 @@ const signupValidation = [
     .withMessage("Your password must have at least 1 uppercase letter.")
     .matches(/[a-z]+/)
     .withMessage("Your password must have at least 1 lowercase letter.")
-    .matches(/[!@#$\{%\}^;:\.\/'\["&\]*\(\)]+/g)
+    .matches(/[!@#$\{%\}^;:\.\/'\["&\]+\-\*\(\)]+/g)
     .withMessage("Your password should have at least one special character."),
 
   body("confirm_password").custom((value, { req }) => {

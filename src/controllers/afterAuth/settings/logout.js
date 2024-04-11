@@ -5,8 +5,7 @@ const logout = async function (req, res, next) {
   const refreshToken = req.cookies?.strrings_connect;
 
   try {
-    const user = await userDb.findOne({ "tokens.refreshToken": refreshToken });
-    if (!refreshToken || !user) {
+    if (!refreshToken) {
       return res.sendStatus(403);
     }
 
@@ -15,6 +14,7 @@ const logout = async function (req, res, next) {
       secure: true,
       sameSite: "strict",
     });
+
     res.clearCookie("change_once", {
       httpOnly: true,
       secure: true,
@@ -31,8 +31,15 @@ const logout = async function (req, res, next) {
       secure: true,
       sameSite: "strict",
     });
+
+    res.clearCookie("connect.sid", {
+      secure: false,
+      httpOnly: true,
+      sameSite: "strict",
+    });
+
     await userDb.updateOne(
-      { email: user.email },
+      { "tokens.refreshToken": refreshToken },
       {
         $set: {
           "tokens.refreshToken": "",
@@ -48,6 +55,7 @@ const logout = async function (req, res, next) {
 
     return req.logout((err) => {
       if (err) return err;
+
       console.log(req.isAuthenticated(), "User logout successfully 🚫");
       return res.sendStatus(204);
     });

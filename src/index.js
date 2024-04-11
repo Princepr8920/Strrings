@@ -22,7 +22,6 @@ const express = require("express"),
   localAuth = require("./service/localAuth"),
   verifyJWT = require("./middleware/verifyJwt"),
   isAuthOk = require("./middleware/ensureAuth"),
-  bodyParser = require("body-parser"),
   { preValidator } = require("./middleware/validator"),
   immutableFields = require("./middleware/immutableFields"),
   port = process.env.PORT || 5000,
@@ -71,7 +70,6 @@ app.set("trust proxy", 1);
 app.use(hpp());
 app.disable("x-powered-by");
 app.use(mongoSanitize());
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(Credentials);
 app.use(cors(corsOptions));
 app.use(logger("dev"));
@@ -105,7 +103,8 @@ app.use(chatRoutes);
 app.use(settingRoutes);
 
 app.get("/*", function (req, res) {
-  sendFile(path.join(__dirname, "../public", "index.html"));
+  res.sendFile(path.join(__dirname, "../public", "index.html"));
+  return;
 });
 
 server.listen(port, (err) => {

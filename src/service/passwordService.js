@@ -16,7 +16,7 @@ module.exports = class SecurePassword {
         { email: userId },
         { userID: userId },
         { "tokens.refreshToken": userId },
-        { "tokens.requestsToken": userId },
+        { "tokens.requestToken": userId },
       ],
     });
 
@@ -36,7 +36,7 @@ module.exports = class SecurePassword {
               { email: userId },
               { userID: userId },
               { "tokens.refreshToken": userId },
-              { "tokens.requestsToken": userId },
+              { "tokens.requestToken": userId },
             ],
           },
           { $set: { password: newHashedPassword } }

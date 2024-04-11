@@ -1,4 +1,4 @@
-const origins = [
+const origins = [ 
   "https://www.strrings.com",
   "https://strrings.com",
 ];
