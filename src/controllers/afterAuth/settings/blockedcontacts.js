@@ -1,5 +1,6 @@
 const { Validation_Error } = require("../../../service/handleErrors"),
   { database } = require("../../../loaders/mongodb"),
+  userDb = database("userCollection"),
   chatDb = database("chatCollection");
 
 blockedContacts = async (req, res, next) => {

@@ -6,6 +6,7 @@ module.exports = session({
   secret: process.env.TOP_SECRET,
   resave: false,
   saveUninitialized: false,
+  proxy:true,
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
     secure: true,
