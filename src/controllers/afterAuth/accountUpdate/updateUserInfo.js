@@ -17,8 +17,6 @@ const updateUserInfo = async (req, res, next) => {
 
       if (user) {
         let counter = user.user_logs.username_logs.length;
-        let newUsername = update.username;
-        delete update.username;
 
         const updateUserProfile = await userDb.findOneAndUpdate(
           { userID: user.userID },
@@ -27,7 +25,7 @@ const updateUserInfo = async (req, res, next) => {
             $push: {
               // update username logs
               "user_logs.username_logs": {
-                username: newUsername,
+                username: update.username,
                 updated_on: new Date(),
                 update_count: counter++,
               },
@@ -40,7 +38,7 @@ const updateUserInfo = async (req, res, next) => {
 
         const updateChatProfile = await chatDb.findOneAndUpdate(
           { userID: user.userID },
-          { $set: { username: newUsername } },
+          { $set: { username: update.username } },
           { returnDocument: "after" }
         );
 
