@@ -1,5 +1,5 @@
 const { getMessaging } = require("firebase-admin/messaging"),
- { database } = require("../../loaders/mongodb"),
+  { database } = require("../../loaders/mongodb"),
   userDb = database("userCollection");
 
 async function pushNotification(userIDs, message) {
@@ -16,7 +16,7 @@ async function pushNotification(userIDs, message) {
     sendNotification({
       body: `${sender.username} : ${message.content}`,
       image: sender.picture,
-      link: "https://www.strrings.com",// open chats when user click on notification
+      link: "https://www.strrings.com", // open chats when user click on notification
       token: receiver.notifications.notification_permission.token,
     });
     return;
@@ -24,12 +24,12 @@ async function pushNotification(userIDs, message) {
 
   function sendNotification({ image, body, link, token }) {
     const message = {
-      notification: {
+      // notification: {},
+      data: {
         title: `Strrings`,
         body,
-        image,
+        image, 
       },
-      data: { icon: image },
       token,
       webpush: {
         fcm_options: {
