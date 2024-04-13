@@ -24,11 +24,10 @@ async function pushNotification(userIDs, message) {
 
   function sendNotification({ image, body, link, token }) {
     const message = {
-      // notification: {},
-      data: {
+      notification: {
         title: `Strrings`,
         body,
-        image, 
+        image,
       },
       token,
       webpush: {

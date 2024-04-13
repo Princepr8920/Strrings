@@ -14,9 +14,8 @@ const firebaseConfig = {
   storageBucket: "strrings-29a9e.appspot.com",
   messagingSenderId: "252292433754",
   appId: "1:252292433754:web:3f5975fab968d203e6d563",
-  measurementId: "G-EYZJ0GQKXM"
+  measurementId: "G-EYZJ0GQKXM",
 };
-
 
 // eslint-disable-next-line no-undef
 firebase.initializeApp(firebaseConfig);
@@ -25,38 +24,21 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log(
-    "[firebase-messaging-sw.js] Received background message ",
-    payload
-  );
-  const notificationTitle = payload.data.title;
   const notificationOptions = {
-    body: payload.data.body,
-    icon: payload.data.image,
+    body: payload.notification.body,
+    icon: payload.notification.image,
   };
 
   // eslint-disable-next-line no-restricted-globals
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(
+    payload.notification.title,
+    notificationOptions
+  );
 });
 
 /**
  I got the above code from https://github.com/firebase/quickstart-js/blob/master/messaging/firebase-messaging-sw.js
  */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { getMessaging } from "firebase/messaging/sw";
 // import { onBackgroundMessage } from "firebase/messaging/sw";
