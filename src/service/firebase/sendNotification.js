@@ -24,7 +24,7 @@ async function pushNotification(userIDs, message) {
 
   function sendNotification({ image, body, link, token }) {
     const message = {
-      notification: {
+      data: {
         title: `Strrings`,
         body,
         image,
