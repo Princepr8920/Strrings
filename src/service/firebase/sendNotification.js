@@ -28,7 +28,6 @@ async function pushNotification(userIDs, message) {
         title: `Strrings`,
         body,
         image,
-        clickUrl: link,
       },
       token,
       webpush: {
