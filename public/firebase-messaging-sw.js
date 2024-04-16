@@ -25,13 +25,13 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
-    body: payload.notification.body,
-    icon: payload.notification.image,
+    body: payload.data.body,
+    icon: payload.data.image,
   };
 
   // eslint-disable-next-line no-restricted-globals
   self.registration.showNotification(
-    payload.notification.title,
+    payload.data.title,
     notificationOptions
   );
 });
