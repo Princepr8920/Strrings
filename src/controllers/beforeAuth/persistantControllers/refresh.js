@@ -1,5 +1,4 @@
-const { formatDate } = require("../../../utils/userAge"),
-  jwt = require("jsonwebtoken"),
+const jwt = require("jsonwebtoken"),
   createToken = require("../../../service/createToken"),
   Secure = require("../../../utils/filterInfo"),
   SecureInfo = new Secure(),

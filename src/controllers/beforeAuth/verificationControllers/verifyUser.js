@@ -66,7 +66,7 @@ const verifyNewUser = async (req, res, next) => {
 
       res.cookie("strrings_connect", refreshToken, {
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 6 * 30 * 24 * 60 * 60 * 1000, // 6 months session,
         secure: true,
         sameSite: "strict",
       });
