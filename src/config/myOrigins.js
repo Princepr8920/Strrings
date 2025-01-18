@@ -1,3 +1,3 @@
-const origins = ["https://www.strrings.in", "https://strrings.in"];
+const origins = ["http://www.strrings.in", "http://strrings.in"];
 
 module.exports = origins;
