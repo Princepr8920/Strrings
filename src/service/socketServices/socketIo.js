@@ -12,7 +12,7 @@ const { Server } = require("socket.io"),
 function mySocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: "http://www.strrings.in",
+      origin: "https://www.strrings.in",
       methods: ["GET", "POST"],
     },
   });
