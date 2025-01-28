@@ -11,7 +11,7 @@ module.exports = session({
     maxAge: 6 * 30 * 24 * 60 * 60 * 1000, // 6 months session
     secure: false,
     httpOnly: true,
-    // sameSite: "strict",
+    sameSite: "strict",
   },
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_DB_URL,
