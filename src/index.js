@@ -37,11 +37,12 @@ app.use(
     useDefaults: true,
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://www.gstatic.com"],
+      scriptSrc: ["'self'", "https://www.gstatic.com","https://www.strrings.in"],
       styleSrc: [
         "'self'",
         "https://fonts.googleapis.com",
         "https://cdnjs.cloudflare.com",
+        "https://www.strrings.in"
       ],
       fontSrc: [
         "'self'",
@@ -54,12 +55,14 @@ app.use(
         "https:",
         "data:",
         "https://d33ukiczlfmqs7.cloudfront.net",
+        "https://www.strrings.in"
       ],
       connectSrc: [
         "'self'",
         "https://firebaseinstallations.googleapis.com",
         "https://fcmregistrations.googleapis.com",
         "https://d33ukiczlfmqs7.cloudfront.net",
+        "https://www.strrings.in"
       ],
       objectSrc: ["'none'"],
     },
